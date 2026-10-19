@@ -124,6 +124,7 @@ const lastEnd = rows.map((r) => r[6].v).reduce((a, b) => Math.max(a, b));
 XLSX.utils.book_append_sheet(workbook, sheet(
   ['Supuesto', 'Valor'],
   [
+    ['Estado de los datos', 'DATOS DE PRUEBA: supuestos confirmados por el equipo; las fechas pasarán por una revisión antes de uso real'],
     ['Proyecto destino (propuesto)', 'CC-001 Rev. 3 (8 oct 2026)'],
     ['Fecha de inicio del proyecto (supuesto)', PROJECT_START],
     ['Días hábiles', 'Lunes a viernes, sin feriados (hoja Feriados)'],
