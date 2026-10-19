@@ -1,4 +1,4 @@
-import { formatPercent } from '../utils/progress.js';
+import { formatDays, formatPercent } from '../utils/format.js';
 import Icon from './Icon.jsx';
 
 function Card({ icon, tone, label, value, caption, children }) {
@@ -16,24 +16,24 @@ function Card({ icon, tone, label, value, caption, children }) {
 }
 
 export default function KpiCards({ summary }) {
-  const { overall, included, total, finished, late, unknownDelay, tasks, tasksDone } = summary;
-  const excluded = total - included;
+  const { overallProgress, milestonesWithProgress, milestoneCount, finishedMilestones, taskCount, completedTasks, delayDays, delayedTaskCount } = summary;
+  const excluded = milestoneCount - milestonesWithProgress;
 
   return (
     <section className="kpis" aria-label="Indicadores del proyecto completo">
-      <Card icon="progress" tone="brand" label="Avance global" value={formatPercent(overall)}
+      <Card icon="progress" tone="brand" label="Avance global" value={formatPercent(overallProgress)}
         caption={excluded > 0
-          ? `Calculado con ${included} de ${total} hitos; ${excluded} sin tareas válidas no participan.`
-          : `Promedio de los ${total} hitos, todos con el mismo peso.`}>
-        <div className="progress__track" aria-hidden="true"><span className="progress__bar" style={{ width: `${overall ?? 0}%` }} /></div>
+          ? `Calculado con ${milestonesWithProgress} de ${milestoneCount} hitos; ${excluded} sin tareas no participan.`
+          : `Promedio de los ${milestoneCount} hitos, todos con el mismo peso.`}>
+        <div className="progress__track" aria-hidden="true"><span className="progress__bar" style={{ width: `${overallProgress ?? 0}%` }} /></div>
       </Card>
-      <Card icon="check" tone="done" label="Hitos finalizados" value={<>{finished}<small> de {total}</small></>}
-        caption="Según el estado registrado manualmente en el Excel." />
-      <Card icon="clock" tone="late" label="Hitos retrasados" value={late}
-        caption={unknownDelay > 0
-          ? `${unknownDelay} ${unknownDelay === 1 ? 'hito' : 'hitos'} sin datos suficientes para calcular el retraso.`
-          : 'Fecha estimada vencida respecto a hoy, o entregados fuera de fecha.'} />
-      <Card icon="tasks" tone="neutral" label="Tareas completadas" value={<>{tasksDone}<small> de {tasks}</small></>}
+      <Card icon="check" tone="done" label="Hitos finalizados" value={<>{finishedMilestones}<small> de {milestoneCount}</small></>}
+        caption="Un hito termina cuando todas sus tareas están finalizadas." />
+      <Card icon="clock" tone="late" label="Retraso acumulado" value={<>{delayDays}<small> {delayDays === 1 ? 'día' : 'días'}</small></>}
+        caption={delayedTaskCount > 0
+          ? `Suma del retraso de ${delayedTaskCount} ${delayedTaskCount === 1 ? 'tarea atrasada' : 'tareas atrasadas'}.`
+          : `Ninguna tarea está atrasada${delayDays === 0 ? '' : ` (${formatDays(delayDays)})`}.`} />
+      <Card icon="tasks" tone="neutral" label="Tareas finalizadas" value={<>{completedTasks}<small> de {taskCount}</small></>}
         caption="Suma de tareas de todos los hitos." />
     </section>
   );

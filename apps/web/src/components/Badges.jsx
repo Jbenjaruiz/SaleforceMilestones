@@ -1,19 +1,28 @@
-import { formatPercent } from '../utils/progress.js';
+import { formatDays, formatPercent } from '../utils/format.js';
 
-const STATUS_CLASS = { Pendiente: 'pending', 'En curso': 'active', Finalizado: 'done' };
+const STATUS = {
+  completed: { className: 'done', label: 'Finalizado' },
+  in_progress: { className: 'active', label: 'En curso' },
+  pending: { className: 'pending', label: 'Pendiente' },
+  no_tasks: { className: 'muted', label: 'Sin tareas' },
+};
+
+export const STATUS_LABELS = Object.fromEntries(Object.entries(STATUS).map(([key, value]) => [key, value.label]));
 
 export function StatusBadge({ status }) {
-  return <span className={`badge badge--${STATUS_CLASS[status] ?? 'invalid'}`}>{status || 'Sin estado'}</span>;
+  const { className, label } = STATUS[status] ?? STATUS.pending;
+  return <span className={`badge badge--${className}`}>{label}</span>;
 }
 
-export function DelayBadge({ days, status }) {
-  if (status === 'unknown') return <span className="badge badge--muted" title="Falta una fecha para calcular el retraso">No calculable</span>;
-  if (status === 'late') return <span className="badge badge--late">{days} {days === 1 ? 'día' : 'días'}</span>;
+/** Los días de retraso ya vienen calculados por la API. */
+export function DelayBadge({ days, empty = false }) {
+  if (empty) return <span className="muted">—</span>;
+  if (days > 0) return <span className="badge badge--late">{formatDays(days)}</span>;
   return <span className="badge badge--ontime">En plazo</span>;
 }
 
 export function ProgressBar({ value, label }) {
-  const known = value !== null;
+  const known = value !== null && value !== undefined;
   return (
     <div className="progress">
       <span className="progress__value">{formatPercent(value)}</span>

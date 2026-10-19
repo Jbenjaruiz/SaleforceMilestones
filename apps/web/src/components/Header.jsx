@@ -1,9 +1,15 @@
-import { formatDay, parseCalendarDay } from '../utils/dates.js';
+import { NavLink } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext.jsx';
 import Icon from './Icon.jsx';
 
-export default function Header({ config, loading, onReload }) {
-  const cutoff = config ? formatDay(parseCalendarDay(config.FechaCorte) || null) : null;
-  const title = config?.NombreProyecto || 'Seguimiento de Desarrollo Salesforce';
+const ADMIN_LINKS = [
+  { to: '/admin/projects', label: 'Proyectos' },
+  { to: '/admin/users', label: 'Usuarios' },
+  { to: '/admin/roles', label: 'Roles' },
+];
+
+export default function Header() {
+  const { user, logout } = useAuth();
 
   return (
     <header className="header">
@@ -11,16 +17,20 @@ export default function Header({ config, loading, onReload }) {
         <img className="header__logo" src={`${import.meta.env.BASE_URL}images/lucalza-logo.png`} alt="Lucalza" width="124" height="51" />
         <div className="header__title">
           <p className="eyebrow">Tablero ejecutivo</p>
-          <h1>{title}</h1>
+          <h1>Seguimiento de Desarrollo Salesforce</h1>
         </div>
         <div className="header__meta">
-          <dl>
-            <div><dt>Fecha de corte</dt><dd>{cutoff ?? '—'}</dd></div>
-            {config?.VersionDatos && <div><dt>Versión de datos</dt><dd>{config.VersionDatos}</dd></div>}
-          </dl>
-          <button type="button" className="button button--light" onClick={onReload} disabled={loading}>
-            <Icon name="refresh" />
-            {loading ? 'Actualizando…' : 'Actualizar datos'}
+          <nav className="header__nav" aria-label="Principal">
+            <NavLink to="/" end>Tablero</NavLink>
+            {user?.isAdmin && ADMIN_LINKS.map((link) => <NavLink key={link.to} to={link.to}>{link.label}</NavLink>)}
+          </nav>
+          <div className="user-chip">
+            <span className="user-chip__name">{user?.fullName}</span>
+            <span className="user-chip__role">{user?.roleName}</span>
+          </div>
+          <button type="button" className="button button--light" onClick={logout}>
+            <Icon name="logout" />
+            Salir
           </button>
         </div>
       </div>

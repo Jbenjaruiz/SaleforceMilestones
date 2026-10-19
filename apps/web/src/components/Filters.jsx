@@ -1,11 +1,20 @@
-import { STATUSES } from '../utils/dashboard.js';
+import { STATUS_LABELS } from './Badges.jsx';
 
 const DELAY_OPTIONS = [
   { value: 'all', label: 'Todos' },
   { value: 'late', label: 'Retrasados' },
-  { value: 'onTime', label: 'Dentro del plazo' },
-  { value: 'unknown', label: 'Sin datos' },
+  { value: 'onTime', label: 'En plazo' },
 ];
+
+/** Los filtros solo acotan la tabla; los indicadores siempre cubren el proyecto completo. */
+export function filterMilestones(milestones, { status, delay }) {
+  return milestones.filter((milestone) => {
+    if (status !== 'all' && milestone.status !== status) return false;
+    if (delay === 'late') return milestone.delayDays > 0;
+    if (delay === 'onTime') return milestone.status !== 'no_tasks' && milestone.delayDays === 0;
+    return true;
+  });
+}
 
 export default function Filters({ filters, onChange }) {
   return (
@@ -14,7 +23,7 @@ export default function Filters({ filters, onChange }) {
         <span>Estado del hito</span>
         <select value={filters.status} onChange={(event) => onChange({ ...filters, status: event.target.value })}>
           <option value="all">Todos los estados</option>
-          {STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+          {Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </label>
       <fieldset className="segmented">
