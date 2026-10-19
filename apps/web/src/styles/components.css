@@ -276,3 +276,5 @@
 .table--compact td, .table--compact th { padding: 8px 12px; }
 .import-ok { display: flex; align-items: center; gap: 8px; color: var(--done-fg); background: var(--done-bg); border-radius: 8px; padding: 10px 12px; }
 .cell-action .button + .button { margin-left: 6px; }
+/* Botones con y sin icono comparten línea: sin esto se alinean por la base del texto y uno queda más alto. */
+.cell-action .button { vertical-align: middle; }
