@@ -2,6 +2,9 @@ import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-
 import { AuthProvider, useAuth } from './auth/AuthContext.jsx';
 import Header from './components/Header.jsx';
 import { LoadingState } from './components/States.jsx';
+import AdminProjectsPage from './pages/AdminProjectsPage.jsx';
+import AdminRolesPage from './pages/AdminRolesPage.jsx';
+import AdminUsersPage from './pages/AdminUsersPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 
@@ -12,6 +15,12 @@ function RequireAuth() {
   if (status === 'loading') return <main className="container main"><LoadingState>Comprobando su sesión…</LoadingState></main>;
   if (status === 'anonymous') return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   return <Outlet />;
+}
+
+/** Usuarios, roles, proyectos e importaciones son solo del Administrador. */
+function RequireAdmin() {
+  const { user } = useAuth();
+  return user?.isAdmin ? <Outlet /> : <Navigate to="/" replace />;
 }
 
 function Layout() {
@@ -35,6 +44,11 @@ export default function App() {
           <Route element={<RequireAuth />}>
             <Route element={<Layout />}>
               <Route index element={<DashboardPage />} />
+              <Route path="admin" element={<RequireAdmin />}>
+                <Route path="projects" element={<AdminProjectsPage />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="roles" element={<AdminRolesPage />} />
+              </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Route>

@@ -42,8 +42,11 @@ export function mockApi(handlers) {
     const key = `${init.method ?? 'GET'} ${path}`;
     const body = typeof init.body === 'string' ? JSON.parse(init.body) : init.body;
     calls.push({ key, body, headers: init.headers });
-    const handler = table[key] ?? Object.entries(table).find(([pattern]) => pattern.endsWith('*') && key.startsWith(pattern.slice(0, -1)))?.[1];
-    if (!handler) return reply(404, { message: `sin manejador para ${key}` });
+    // `null` es un manejador válido (responde 204), por eso se pregunta por la clave y no por el valor.
+    const exact = key in table;
+    const wildcard = Object.entries(table).find(([pattern]) => pattern.endsWith('*') && key.startsWith(pattern.slice(0, -1)));
+    if (!exact && !wildcard) return reply(404, { message: `sin manejador para ${key}` });
+    const handler = exact ? table[key] : wildcard[1];
     const result = await (typeof handler === 'function' ? handler({ body, path, key }) : handler);
     if (result === null) return reply(204, null);
     if (result && typeof result === 'object' && 'status' in result && ('data' in result || Object.keys(result).length === 1)) return reply(result.status, result.data ?? null);
