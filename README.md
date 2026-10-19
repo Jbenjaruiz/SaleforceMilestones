@@ -38,7 +38,7 @@ Sistema operativo: probado en Windows 11. Debería funcionar igual en macOS y Li
 ### 2. Obtener el código e instalar
 
 ```sh
-git clone <url-del-repositorio>
+git clone https://github.com/Jbenjaruiz/SaleforceMilestones
 cd SaleforceMilestones
 git checkout development                # el sistema completo está en esta rama (main aún no se ha actualizado)
 nvm use 24
