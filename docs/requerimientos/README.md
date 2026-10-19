@@ -8,6 +8,8 @@ Este directorio recoge los requerimientos de las nuevas features. Por ahora **so
 |---|---|---|
 | [F01](F01-base-de-datos-y-backend.md) | Base de datos y backend en NestJS (usuarios, roles y permisos, core) | Aprobada; solo pendiente el despliegue en Azure |
 
+| [F01-despliegue](F01-despliegue-azure.md) | Despliegue en una máquina virtual Windows de Azure (IIS + servicio de Windows) | Propuesta, pendiente de TI |
+
 Preguntas sin resolver: [preguntas-abiertas.md](preguntas-abiertas.md).
 
 ## Estados
