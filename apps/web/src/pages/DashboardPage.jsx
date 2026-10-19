@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { useAuth } from '../auth/AuthContext.jsx';
+import ActivityModal from '../components/Activity.jsx';
 import AlertsPanel from '../components/AlertsPanel.jsx';
 import Filters, { filterMilestones } from '../components/Filters.jsx';
 import { ConfirmDialog, MilestoneForm, TaskForm } from '../components/Forms.jsx';
@@ -62,11 +63,13 @@ export default function DashboardPage() {
   };
 
   const actions = {
+    onOpenMilestoneActivity: (milestone) => setModal({ type: 'activity', target: { type: 'milestone', id: milestone.id, title: `${milestone.code} · ${milestone.name}` } }),
     ...(can('create') && { onAddTask: (milestone) => setModal({ type: 'task', milestone }) }),
     ...(can('update') && { onEditMilestone: (milestone) => setModal({ type: 'milestone', milestone }) }),
     ...(can('delete') && { onDeleteMilestone: (milestone) => setModal({ type: 'delete-milestone', milestone }) }),
     task: {
       busyTaskId,
+      onOpenActivity: (task) => setModal({ type: 'activity', target: { type: 'task', id: task.id, title: task.name } }),
       ...(can('update') && {
         onToggle: toggleTask,
         onEdit: (task) => setModal({ type: 'task', task, milestone: data.milestones.find((m) => m.id === task.milestoneId) }),
@@ -146,6 +149,7 @@ export default function DashboardPage() {
           onSave={(values) => mutate(() => (modal.task ? api.patch(`/tasks/${modal.task.id}`, values) : api.post(`/milestones/${modal.milestone.id}/tasks`, values)))}
         />
       )}
+      {modal?.type === 'activity' && <ActivityModal target={modal.target} onClose={closeModal} />}
       {modal?.type === 'delete-milestone' && (
         <ConfirmDialog title="Eliminar hito" confirmLabel="Eliminar hito" onClose={closeModal} onConfirm={() => mutate(() => api.delete(`/milestones/${modal.milestone.id}`))}>
           <p>Se eliminará el hito <strong>{modal.milestone.code}</strong> junto con sus <strong>{modal.milestone.taskCount} tareas</strong>, sus comentarios y adjuntos. Esta acción no se puede deshacer.</p>

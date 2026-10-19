@@ -14,7 +14,10 @@ export default function Modal({ title, onClose, children, wide = false }) {
     const first = panel.current?.querySelector('input, select, textarea, button:not([data-close])');
     (first ?? panel.current)?.focus();
 
+    // Con ventanas apiladas (p. ej. una confirmación sobre otra ventana) solo responde la de encima.
+    const isTop = () => panel.current?.parentElement === [...document.querySelectorAll('.modal')].at(-1);
     const onKey = (event) => {
+      if (!isTop()) return;
       if (event.key === 'Escape') onClose();
       if (event.key !== 'Tab') return;
       const focusable = [...panel.current.querySelectorAll('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)')];
