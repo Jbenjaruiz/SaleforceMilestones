@@ -2,28 +2,20 @@
   "name": "seguimiento-salesforce",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "preview": "vite preview --host",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "build:data": "node scripts/build-workbook.mjs"
-  },
-  "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "xlsx": "^0.18.5"
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @seguimiento/api\" \"npm run dev -w @seguimiento/web\"",
+    "dev:web": "npm run dev -w @seguimiento/web",
+    "dev:api": "npm run dev -w @seguimiento/api",
+    "build": "npm run build --workspaces",
+    "test": "npm test --workspaces",
+    "build:import-template": "node scripts/build-import-template.mjs"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.8",
-    "@vitejs/plugin-react": "^4.7.0",
-    "jsdom": "^26.1.0",
-    "vite": "^6.3.5",
-    "vitest": "^3.2.7"
+    "concurrently": "^9.2.1",
+    "xlsx": "^0.18.5"
   },
   "engines": {
     "node": ">=24"

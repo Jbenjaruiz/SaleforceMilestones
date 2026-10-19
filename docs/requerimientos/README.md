@@ -1,0 +1,23 @@
+# Requerimientos
+
+Este directorio recoge los requerimientos de las nuevas features. Por ahora **solo se documenta; no se implementa código**.
+
+## Índice
+
+| ID | Feature | Estado |
+|---|---|---|
+| [F01](F01-base-de-datos-y-backend.md) | Base de datos y backend en NestJS (usuarios, roles y permisos, core) | Aprobada; solo pendiente el despliegue en Azure |
+
+Preguntas sin resolver: [preguntas-abiertas.md](preguntas-abiertas.md).
+
+## Estados
+
+- **Propuesta:** redactada, sin validar.
+- **Aclarar:** hay preguntas abiertas que cambian el diseño.
+- **Aprobada:** lista para implementar.
+
+## Convenciones
+
+- Un archivo por feature: `Fnn-nombre.md`.
+- Lo que no esté confirmado se marca como **pendiente**, no se asume.
+- Los diagramas usan Mermaid, que GitHub renderiza directamente.

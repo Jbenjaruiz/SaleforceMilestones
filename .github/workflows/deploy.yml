@@ -26,12 +26,13 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm test
-      - run: npm run build
+      # Solo el frontend se publica en Pages; la API se prueba aparte.
+      - run: npm test -w @seguimiento/web
+      - run: npm run build -w @seguimiento/web
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: apps/web/dist
 
   deploy:
     needs: build
