@@ -1,0 +1,24 @@
+/* Paleta tomada de LucalzaLanding (demos/accounting/accounting.css y css/style.css). */
+:root {
+  --brand: #005153;
+  --brand-dark: #1e3238;
+  --brand-soft: #e3eeee;
+  --accent: #ecab23;
+  --bg: #f4f7f9;
+  --surface: #ffffff;
+  --line: #dde4e8;
+  --text: #1e3238;
+  --muted: #5b6a70;
+
+  /* Semánticos: independientes de la paleta de marca */
+  --pending-fg: #475569;   --pending-bg: #eceff3;
+  --active-fg: #1d4ed8;    --active-bg: #e5edff;
+  --done-fg: #166534;      --done-bg: #e1f4e8;
+  --late-fg: #b42318;      --late-bg: #fdeceb;
+  --warn-fg: #8a5700;      --warn-bg: #fff3d6;
+
+  --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgb(30 50 56 / 6%), 0 4px 14px rgb(30 50 56 / 5%);
+}
