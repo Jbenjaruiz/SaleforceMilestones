@@ -7,8 +7,13 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { validateEnv } from './config/env.validation';
 import { buildDatabaseOptions } from './database/database.config';
+import { CommentsModule } from './comments/comments.module';
+import { CoreModule } from './core/core.module';
 import { HealthModule } from './health/health.module';
+import { MilestonesModule } from './milestones/milestones.module';
+import { ProjectsModule } from './projects/projects.module';
 import { RolesModule } from './roles/roles.module';
+import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -25,8 +30,13 @@ import { UsersModule } from './users/users.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
     AuditModule,
     AuthModule,
+    CoreModule,
     UsersModule,
     RolesModule,
+    ProjectsModule,
+    MilestonesModule,
+    TasksModule,
+    CommentsModule,
     HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

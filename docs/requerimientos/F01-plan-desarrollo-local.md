@@ -77,8 +77,8 @@ Consecuencias:
 | 2. Esqueleto de la API y conexión | Hecho |
 | 3. Esquema, migración y carga inicial | Hecho (esquema creado por el administrador de la base con el script; migración sin registrar en `migrations`, requiere DDL) |
 | 4. Autenticación, permisos, usuarios y roles | Hecho y probado contra la base real (34 comprobaciones) |
-| 5. Core: proyectos, hitos, tareas, cálculos, comentarios | Pendiente |
-| 6. Adjuntos y auditoría completa | Auditoría de usuarios y roles hecha; adjuntos pendientes |
+| 5. Core: proyectos, hitos, tareas, cálculos, comentarios | Hecho y probado contra la base real (49 comprobaciones) |
+| 6. Adjuntos y auditoría completa | Auditoría de todo el core hecha; adjuntos pendientes |
 | 7. Importación del Excel | Pendiente |
 | 8. Frontend conectado a la API | Pendiente |
 
@@ -95,3 +95,20 @@ Consecuencias:
 Reglas implementadas: sin autoregistro; el email se guarda en minúsculas; contraseña de 7 a 72 caracteres; el hash nunca se devuelve; el rol Administrator es protegido; siempre debe quedar un administrador activo y nadie puede desactivarse a sí mismo; un rol con usuarios no se borra; una cuenta desactivada pierde acceso al instante, aunque su token siga vigente; los mensajes de error de login no revelan si el email existe.
 
 Nota técnica: los identificadores que genera SQL Server (`NEWSEQUENTIALID`) no son UUID RFC 4122, por eso la API valida GUID con un patrón propio en lugar de `IsUUID`.
+
+### API del paso 5 (prefijo `/api`)
+
+| Ruta | Permiso | Qué hace |
+|---|---|---|
+| `GET /projects` (`?includeArchived=true` solo admin) | read | Selector de proyectos |
+| `GET /projects/:id`, `GET /projects/:id/dashboard` | read | Proyecto; tablero completo (resumen, hitos con tareas y alertas) |
+| `POST /projects`, `PATCH /projects/:id`, `POST /projects/:id/archive`, `POST /projects/:id/unarchive` | Solo Administrator | Crear, editar, archivar y reactivar |
+| `POST /projects/:projectId/milestones` | create | Crear hito (código en mayúsculas, único por proyecto) |
+| `GET /milestones/:id` / `PATCH` / `DELETE` | read / update / delete | Ver, editar, borrar con sus tareas y comentarios |
+| `POST /milestones/:milestoneId/tasks` | create | Crear tarea (fechas de inicio y estimada obligatorias) |
+| `GET /tasks/:id` / `PATCH` / `DELETE` | read / update / delete | Ver, editar, borrar |
+| `PUT /tasks/:id/completion` `{ "completed": true|false }` | update | El botón de check: fija o borra la fecha real |
+| `GET/POST /milestones/:id/comments`, `GET/POST /tasks/:id/comments` | read / create | Comentarios |
+| `DELETE /comments/:id` | Autor o Administrator | Borrar un comentario |
+
+Reglas implementadas: el hito no guarda fechas ni estado (se derivan de sus tareas: inicio = primera, estimada = mayor, finalización = última tarea finalizada); retraso de la tarea = días de atraso respecto a la fecha estimada (finalizada: contra su fecha real; sin finalizar: contra hoy); retraso del hito y del proyecto = suma; avance global = media simple de los hitos con tareas; «hoy» se calcula en la zona `APP_TIMEZONE` (por defecto America/Guatemala); un proyecto archivado es invisible para los no administradores y de solo lectura para el administrador; el borrado de un hito o tarea elimina comentarios y adjuntos en orden dentro de una transacción (y devuelve las rutas de archivo para borrarlas del disco en el paso 6).
