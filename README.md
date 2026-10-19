@@ -40,7 +40,7 @@ Sistema operativo: probado en Windows 11. Debería funcionar igual en macOS y Li
 ```sh
 git clone <url-del-repositorio>
 cd SaleforceMilestones
-git checkout feat/f01-monorepo-api      # el sistema completo está en esta rama hasta que se fusione a main
+git checkout development                # el sistema completo está en esta rama (main aún no se ha actualizado)
 nvm use 24
 npm install                              # instala la raíz, apps/web y apps/api
 ```
@@ -150,7 +150,7 @@ En **Proyectos** (solo administradores): *Descargar plantilla*, completarla y *I
 
 ## Despliegue
 
-Pendiente: se hará en una máquina virtual Windows de Azure de la empresa (IIS + servicio de Windows). El plan, la configuración y las preguntas para TI están en [`docs/requerimientos/F01-despliegue-azure.md`](docs/requerimientos/F01-despliegue-azure.md). El workflow de GitHub Pages (`.github/workflows/deploy.yml`) solo publica el frontend, que necesita la API para funcionar; **no sirve como despliegue** y debe reemplazarse por uno de integración continua antes de fusionar esta rama a `main`.
+Pendiente: se hará en una máquina virtual Windows de Azure de la empresa (IIS + servicio de Windows). El plan, la configuración y las preguntas para TI están en [`docs/requerimientos/F01-despliegue-azure.md`](docs/requerimientos/F01-despliegue-azure.md). No se usa GitHub Pages: el frontend necesita la API para funcionar, y su workflow se eliminó. Tampoco hay integración continua automática por ahora; ejecute `npm test` y `npm run build` antes de subir cambios.
 
 ## Documentación
 

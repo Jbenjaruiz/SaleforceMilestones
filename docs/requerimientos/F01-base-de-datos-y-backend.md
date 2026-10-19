@@ -38,7 +38,7 @@ Es viable y adecuado para un proyecto pequeño: un solo repositorio, un solo his
 - **npm workspaces** basta; no hace falta Nx ni Turborepo para este tamaño.
 - Node 24 en todo el repositorio.
 - **Fase actual: desarrollo local** (API, base de datos de prueba y frontend en la máquina del equipo).
-- **Destino:** servidores Azure de la empresa, que ya existen y paga la empresa. El frontend se publicará allí, no en GitHub Pages; el workflow de Pages actual se retirará o se dejará solo como vista previa (decisión al desplegar).
+- **Destino:** servidores Azure de la empresa, que ya existen y paga la empresa. El frontend se publicará allí, no en GitHub Pages; el workflow de Pages **se eliminó del repositorio**.
 - Detalles de despliegue aún sin definir: tipo de servicio Azure (máquina virtual, App Service…), dominio, HTTPS, y si el frontend lo sirve el mismo servidor que la API (evita problemas de CORS) o uno aparte.
 - Mover el frontend a `apps/web` es un cambio de estructura que se hará al implementar, no ahora.
 - **Idioma del código:** todo el código fuente, la API, la base de datos y los commits técnicos van en **inglés**. La interfaz sigue en español y la documentación de `docs/` también.

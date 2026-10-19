@@ -2,7 +2,7 @@
 
 Documento de contexto para quien se incorpore al proyecto: qué se hizo, por qué, cómo está construido, qué se decidió, qué falta y qué trampas conviene conocer. Las instrucciones para ponerlo en marcha están en el [README](../README.md).
 
-> **Estado a la fecha de redacción:** el sistema funciona de extremo a extremo en local (API + base SQL Server remota de pruebas + frontend). Está en la rama `feat/f01-monorepo-api`, **sin fusionar a `main` ni subir al remoto**. Falta el despliegue en Azure.
+> **Estado a la fecha de redacción:** el sistema funciona de extremo a extremo en local (API + base SQL Server remota de pruebas + frontend). Está en la rama **`development`** (la rama de trabajo `feat/f01-monorepo-api` se fusionó mediante el *pull request* #1 y se eliminó). `main` sigue en el commit inicial: no se ha actualizado. Falta el despliegue en Azure.
 
 ## 1. Qué es y para qué sirve
 
@@ -92,8 +92,9 @@ Pantallas: inicio de sesión; tablero (selector de proyecto, indicadores, filtro
 3. Análisis de los dos documentos de origen y plantilla de importación con fechas de prueba.
 4. **Paso 1** monorepo → **2** esqueleto de la API y conexión → **3** esquema, migración y carga inicial → **4** autenticación, permisos, usuarios y roles → **5** core (proyectos, hitos, tareas, comentarios) → **6** adjuntos → **7** importación del Excel → **8** frontend (inicio de sesión, tablero, edición, comentarios/adjuntos, administración).
 5. Plan de despliegue en una máquina virtual Windows de Azure.
+6. Cierre: fusión de la rama de trabajo en `development`, eliminación del workflow de GitHub Pages y actualización de la documentación.
 
-Historial: `git log` en la rama `feat/f01-monorepo-api` (un commit por paso lógico).
+Historial: `git log` en la rama `development` (un commit por paso lógico, más los de fusión).
 
 ## 6. Cómo se verificó
 
@@ -124,7 +125,7 @@ Los scripts de comprobación contra la base real **no están en el repositorio**
 | **Despliegue en Azure** | Plan en [`requerimientos/F01-despliegue-azure.md`](requerimientos/F01-despliegue-azure.md): máquina virtual Windows, IIS + servicio de Windows. Faltan las respuestas de TI (§9 del plan) |
 | **Cifrado de la base** | Resolver la versión/TLS de SQL Server antes de producción |
 | **Registro de migraciones** | Parte 3 del script SQL (requiere DDL) |
-| **Fusión a `main`** | La rama no se ha fusionado. El workflow `.github/workflows/deploy.yml` publica en GitHub Pages un frontend que **no puede iniciar sesión** sin API; hay que reemplazarlo por uno de integración continua (solo pruebas y compilación) **antes** de fusionar |
+| **`main` y CI** | `main` no se ha actualizado (sigue en el commit inicial). El workflow de GitHub Pages **se eliminó**; no hay integración continua automática. Decidir si se agrega un flujo que solo pruebe y compile, y cuándo fusionar `development` en `main` |
 | **Datos reales** | La plantilla de importación es de **prueba**: fechas calculadas con supuestos (feriados de Guatemala, inicio 19-oct-2026, 2 días hábiles de pruebas entre tareas) y sin responsables. Debe revisarse. `CC-C09` y `CC-C12` no tienen tareas |
 | **Vulnerabilidades de dependencias** | `npm install` reporta varias en herramientas de desarrollo; revisar con `npm audit` antes de desplegar |
 | **Respaldos** | De la base y de la carpeta de adjuntos |
@@ -207,3 +208,8 @@ El proyecto se desarrolló en conversación con Claude Code. Estos son los mensa
 44. «Puede este monorepo funcionar en githubpages?»
 45. «Entonces comencemos a ver cómo debería desplegarse este proyeto en un servidor de azureAD»
 46. «Haz un resumen de lo realizado en este proyecto, en un archivo de la carpeta docs, agrega los promps ingresados y lo que creas necesario para contexto de otro desarrollador. Igualmente incluye en el readme todo lo necesario para que otro desarrollador pueda correr el proyecto en su computador local.»
+
+### Fase 5: cierre
+
+47. «hice merge de esta rama a la rama development, cambia a esa rama y revisa que todos los cambios estén ahí, luego elimina el flujo de github pages en esa rama (developmemt) actualiza la documentación, sube tambien el ultimo cambio y elimina la rama actual»
+48. «Listo, ya hice el merge de la rama actual a develop» *(se había pedido el merge, pero al revisar el remoto `development` seguía en el commit inicial; la aclaración llegó cuando el *pull request* #1 ya estaba fusionado)*

@@ -125,7 +125,7 @@ La API lee su `.env` de su carpeta de trabajo; si se prefiere, las variables se 
 2. **Empaquetar:** `apps/web/dist` → `web\`; `apps/api/dist`, `apps/api/package.json` y `node_modules` de producción (`npm ci --omit=dev` en el espacio de trabajo de la API) → `api\`.
 3. **Publicar** con un script de PowerShell versionado: respaldar la versión actual, detener el servicio, copiar, iniciar el servicio y comprobar `https://<dominio>/api/health` (debe responder `ok` y `database: up`). Si falla, restaurar el respaldo.
 4. Para la primera vez: ejecutar el script SQL de `docs/requerimientos/F01-script-creacion-tablas.md` (lo corre quien administre la base) y luego, desde la carpeta `api`, `node distdatabaseseed.js` (con `ADMIN_EMAIL` y `ADMIN_PASSWORD` definidos) para crear los roles y el administrador inicial. Se usa el seed ya compilado: en el servidor no hay herramientas de desarrollo (`ts-node`).
-5. **GitHub Pages:** el workflow `.github/workflows/deploy.yml` debe reemplazarse por uno que solo pruebe y compile (CI), porque publicar el frontend solo en Pages deja un sitio que no puede iniciar sesión.
+5. **GitHub Pages:** el workflow que publicaba en Pages **se eliminó** del repositorio (publicar solo el frontend dejaba un sitio que no podía iniciar sesión). Hoy no hay integración continua: las pruebas se ejecutan a mano (`npm test`) y el flujo de publicación depende de lo que decida TI (pregunta 7 de §9).
 
 La forma de transferir el paquete (copia manual, recurso compartido, Azure DevOps, ejecutor autohospedado de GitHub) depende de la política de TI; ver las preguntas de §9.
 
