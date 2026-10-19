@@ -80,7 +80,7 @@ Consecuencias:
 | 5. Core: proyectos, hitos, tareas, cálculos, comentarios | Hecho y probado contra la base real (49 comprobaciones) |
 | 6. Adjuntos y auditoría completa | Hecho y probado contra la base real y el disco (28 comprobaciones) |
 | 7. Importación del Excel | Hecho y probado con la plantilla real (20 comprobaciones) |
-| 8. Frontend conectado a la API | Pendiente |
+| 8. Frontend conectado a la API | Hecho: inicio de sesión, tablero, edición, comentarios y adjuntos, y administración. 53 pruebas del frontend y una prueba de extremo a extremo en un navegador real (20 comprobaciones) |
 
 ### API del paso 4 (prefijo `/api`)
 
@@ -137,3 +137,11 @@ Plantilla: hoja `Plantilla` (o la primera hoja), una fila por tarea, columnas `C
 Reglas: **todo o nada** (con cualquier error no se guarda nada y se devuelven todos los problemas a la vez, con fila, columna y código; hasta 200); se rechazan los códigos que ya existen en el proyecto, las filas con datos faltantes o inválidas, un hito con nombres distintos en filas distintas y una tarea repetida dentro de un hito; no crea proyectos ni toca hitos existentes; no admite proyectos archivados; máximo 5 MB y 2000 filas; queda registrada en la auditoría con el nombre del archivo y los códigos.
 
 Nota técnica: se lee con `exceljs` y no con `xlsx` (SheetJS), porque la versión publicada en npm de SheetJS tiene vulnerabilidades conocidas al abrir archivos manipulados y aquí el archivo lo sube un usuario.
+
+### Frontend del paso 8
+
+Pantallas: inicio de sesión; tablero (selector de proyecto, indicadores, filtros, hitos con sus tareas, botón de check, formularios de hitos y tareas, comentarios y adjuntos); y, solo para administradores, Usuarios, Roles y Proyectos (con la importación en dos pasos: validar, luego importar). Los controles aparecen según los permisos del usuario y los errores de la API se muestran en español. Se retiró la lectura del Excel y la dependencia de SheetJS del frontend.
+
+Verificado de extremo a extremo con un navegador real (Edge) contra la API y la base: ingreso, creación de un proyecto, importación de la plantilla (11 hitos y 28 tareas), check y reapertura de una tarea con el avance recalculado, comentario con imagen, adjunto directo, hito y tarea creados a mano, creación de un usuario revisor y su sesión sin controles de edición, y vista móvil sin desplazamiento horizontal.
+
+Pendiente fuera de este plan: el despliegue en Azure, el registro de la migración en la tabla `migrations` (requiere DDL), tratar el cifrado del servidor SQL Server 2012 y el respaldo de la carpeta de adjuntos.
