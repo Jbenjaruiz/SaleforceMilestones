@@ -2,14 +2,13 @@ import 'reflect-metadata';
 import 'dotenv/config';
 import * as bcrypt from 'bcryptjs';
 import { DataSource } from 'typeorm';
+import { BCRYPT_ROUNDS, MIN_PASSWORD_LENGTH } from '../auth/password';
 import { Permission } from '../roles/permission.entity';
 import { ADMIN_ROLE_NAME, SYSTEM_ROLES } from '../roles/permissions';
 import { Role } from '../roles/role.entity';
 import { User } from '../users/user.entity';
 import dataSource from './data-source';
 
-export const MIN_PASSWORD_LENGTH = 7;
-const BCRYPT_ROUNDS = 12;
 
 export interface AdminCredentials {
   email: string;

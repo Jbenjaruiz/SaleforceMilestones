@@ -68,3 +68,30 @@ Consecuencias:
 - La conexión sin cifrar envía credenciales en claro. Aceptable en red interna de pruebas; no para producción. Conviene pedir una versión de SQL Server soportada o un certificado/TLS compatible antes del despliegue.
 - Las migraciones deben evitar sintaxis posterior a 2012.
 - Para continuar, quien administre el servidor debe dar al usuario, sobre `fw_project`, al menos los roles `db_ddladmin`, `db_datareader` y `db_datawriter`.
+
+## 7. Estado de avance
+
+| Paso | Estado |
+|---|---|
+| 1. Monorepo | Hecho |
+| 2. Esqueleto de la API y conexión | Hecho |
+| 3. Esquema, migración y carga inicial | Hecho (esquema creado por el administrador de la base con el script; migración sin registrar en `migrations`, requiere DDL) |
+| 4. Autenticación, permisos, usuarios y roles | Hecho y probado contra la base real (34 comprobaciones) |
+| 5. Core: proyectos, hitos, tareas, cálculos, comentarios | Pendiente |
+| 6. Adjuntos y auditoría completa | Auditoría de usuarios y roles hecha; adjuntos pendientes |
+| 7. Importación del Excel | Pendiente |
+| 8. Frontend conectado a la API | Pendiente |
+
+### API del paso 4 (prefijo `/api`)
+
+| Ruta | Acceso | Qué hace |
+|---|---|---|
+| `GET /health` | Público | Estado de la API y de la base |
+| `POST /auth/login` | Público (10 intentos/min) | Devuelve el token y el usuario con sus permisos |
+| `GET /auth/me` | Sesión | Usuario actual |
+| `GET/POST /users`, `GET/PATCH /users/:id`, `POST /users/:id/password` | Solo Administrator | Gestión de usuarios y contraseñas |
+| `GET/POST /roles`, `GET/PATCH/DELETE /roles/:id` | Solo Administrator | Gestión de roles y permisos |
+
+Reglas implementadas: sin autoregistro; el email se guarda en minúsculas; contraseña de 7 a 72 caracteres; el hash nunca se devuelve; el rol Administrator es protegido; siempre debe quedar un administrador activo y nadie puede desactivarse a sí mismo; un rol con usuarios no se borra; una cuenta desactivada pierde acceso al instante, aunque su token siga vigente; los mensajes de error de login no revelan si el email existe.
+
+Nota técnica: los identificadores que genera SQL Server (`NEWSEQUENTIALID`) no son UUID RFC 4122, por eso la API valida GUID con un patrón propio en lugar de `IsUUID`.

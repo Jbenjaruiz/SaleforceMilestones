@@ -1,4 +1,5 @@
-const REQUIRED = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'] as const;
+const REQUIRED = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'JWT_SECRET'] as const;
+const MIN_JWT_SECRET_LENGTH = 32;
 
 /** Fails at startup with a readable message instead of a cryptic driver error later on. */
 export function validateEnv(env: Record<string, unknown>): Record<string, unknown> {
@@ -12,6 +13,10 @@ export function validateEnv(env: Record<string, unknown>): Record<string, unknow
   const port = env.DB_PORT;
   if (port !== undefined && port !== '' && !Number.isInteger(Number(port))) {
     throw new Error(`DB_PORT must be a number, got "${String(port)}".`);
+  }
+
+  if (String(env.JWT_SECRET).length < MIN_JWT_SECRET_LENGTH) {
+    throw new Error(`JWT_SECRET must have at least ${MIN_JWT_SECRET_LENGTH} characters.`);
   }
 
   return env;
