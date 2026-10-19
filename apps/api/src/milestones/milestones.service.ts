@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Not, Repository } from 'typeorm';
+import { AttachmentStorage } from '../attachments/attachment-storage';
 import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/authenticated-user';
 import { ClockService } from '../common/clock.service';
@@ -17,6 +18,7 @@ export class MilestonesService {
     private readonly access: CoreAccessService,
     private readonly clock: ClockService,
     private readonly audit: AuditService,
+    private readonly storage: AttachmentStorage,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -76,7 +78,7 @@ export class MilestonesService {
   /** Deletes the milestone with its tasks, comments and attachments. */
   async remove(id: string, actor: AuthenticatedUser): Promise<void> {
     const milestone = await this.access.milestone(id, actor, true);
-    await this.dataSource.transaction(async (manager) => {
+    const report = await this.dataSource.transaction(async (manager) => {
       const report = await deleteMilestone(manager, id);
       await this.audit.record(
         {
@@ -88,7 +90,9 @@ export class MilestonesService {
         },
         manager,
       );
+      return report;
     });
+    await this.storage.removeMany(report.storageKeys);
   }
 
   private async view(id: string): Promise<MilestoneView> {

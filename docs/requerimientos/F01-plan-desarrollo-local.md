@@ -78,7 +78,7 @@ Consecuencias:
 | 3. Esquema, migración y carga inicial | Hecho (esquema creado por el administrador de la base con el script; migración sin registrar en `migrations`, requiere DDL) |
 | 4. Autenticación, permisos, usuarios y roles | Hecho y probado contra la base real (34 comprobaciones) |
 | 5. Core: proyectos, hitos, tareas, cálculos, comentarios | Hecho y probado contra la base real (49 comprobaciones) |
-| 6. Adjuntos y auditoría completa | Auditoría de todo el core hecha; adjuntos pendientes |
+| 6. Adjuntos y auditoría completa | Hecho y probado contra la base real y el disco (28 comprobaciones) |
 | 7. Importación del Excel | Pendiente |
 | 8. Frontend conectado a la API | Pendiente |
 
@@ -112,3 +112,15 @@ Nota técnica: los identificadores que genera SQL Server (`NEWSEQUENTIALID`) no 
 | `DELETE /comments/:id` | Autor o Administrator | Borrar un comentario |
 
 Reglas implementadas: el hito no guarda fechas ni estado (se derivan de sus tareas: inicio = primera, estimada = mayor, finalización = última tarea finalizada); retraso de la tarea = días de atraso respecto a la fecha estimada (finalizada: contra su fecha real; sin finalizar: contra hoy); retraso del hito y del proyecto = suma; avance global = media simple de los hitos con tareas; «hoy» se calcula en la zona `APP_TIMEZONE` (por defecto America/Guatemala); un proyecto archivado es invisible para los no administradores y de solo lectura para el administrador; el borrado de un hito o tarea elimina comentarios y adjuntos en orden dentro de una transacción (y devuelve las rutas de archivo para borrarlas del disco en el paso 6).
+
+### API del paso 6 (prefijo `/api`)
+
+| Ruta | Permiso | Qué hace |
+|---|---|---|
+| `POST /tasks/:id/attachments` (multipart, campo `files`, hasta 5) | update | Adjuntar archivos directamente a una tarea |
+| `GET /tasks/:id/attachments` | read | Listar los adjuntos de una tarea |
+| `POST /milestones/:id/comments`, `POST /tasks/:id/comments` | create | Aceptan JSON, o multipart con `body` y hasta 5 `files` |
+| `GET /attachments/:id/download` | read | Descargar (la imagen se muestra en línea, el PDF como descarga) |
+| `DELETE /attachments/:id` | Quien lo subió o Administrator | Borrar un adjunto |
+
+Reglas: solo PNG, JPG, WebP y PDF, **identificados por el contenido del archivo** (no por la extensión ni por el tipo que declare el navegador); máximo 5 MB por archivo y 5 por tarea o por comentario (contando los que ya tiene); los archivos se guardan en `STORAGE_DIR` con un nombre generado (el nombre original solo se guarda como dato, sin rutas ni caracteres de control); solo se descargan con sesión, con `X-Content-Type-Options: nosniff` y una política `sandbox`; no se pueden añadir archivos a un comentario ya creado; si algo falla al guardar, no quedan archivos huérfanos ni comentarios a medias; al borrar un comentario, tarea o hito se borran sus archivos del disco una vez confirmada la transacción; un proyecto archivado no admite subidas y es invisible para quien no es administrador.

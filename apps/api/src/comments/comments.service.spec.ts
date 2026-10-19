@@ -8,20 +8,22 @@ function setup() {
   const comment = { id: 'c1', authorId: 'author', milestoneId: 'm1', taskId: null };
   const deleted: unknown[] = [];
   const manager = {
-    getRepository: () => ({ find: async () => [], delete: async (x: unknown) => void deleted.push(x) }),
+    getRepository: () => ({ find: async () => [{ id: 'a1', storageKey: '2026/10/x.png' }], delete: async (x: unknown) => void deleted.push(x) }),
   };
   const access = { comment: async () => comment };
   const audit = { record: jest.fn() };
   const dataSource = { transaction: async (fn: (m: unknown) => unknown) => fn(manager) };
-  const service = new CommentsService({} as never, access as never, audit as never, dataSource as never);
-  return { service, deleted, audit };
+  const storage = { removeMany: jest.fn() };
+  const service = new CommentsService({} as never, access as never, {} as never, storage as never, audit as never, dataSource as never);
+  return { service, deleted, audit, storage };
 }
 
 describe('CommentsService.remove', () => {
-  it('lets the author delete their own comment', async () => {
-    const { service, deleted } = setup();
+  it('lets the author delete their own comment, and removes its files from disk afterwards', async () => {
+    const { service, deleted, storage } = setup();
     await service.remove('c1', user('author'));
     expect(deleted).toContain('c1');
+    expect(storage.removeMany).toHaveBeenCalledWith(['2026/10/x.png']);
   });
 
   it('lets an administrator delete anyone\'s comment', async () => {

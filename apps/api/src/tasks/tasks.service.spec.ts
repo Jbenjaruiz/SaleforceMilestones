@@ -33,7 +33,7 @@ function setup(initial = stored()) {
   const clock = { today: () => state.today };
   const audit = { record: jest.fn() };
   const dataSource = { transaction: async (fn: (m: unknown) => unknown) => fn(manager) };
-  const service = new TasksService(repository as never, access as never, clock as never, audit as never, dataSource as never);
+  const service = new TasksService(repository as never, access as never, clock as never, audit as never, { removeMany: jest.fn() } as never, dataSource as never);
   return { service, state, updates, audit };
 }
 

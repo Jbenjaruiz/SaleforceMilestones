@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { AttachmentStorage } from '../attachments/attachment-storage';
 import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/authenticated-user';
 import { ClockService } from '../common/clock.service';
@@ -17,6 +18,7 @@ export class TasksService {
     private readonly access: CoreAccessService,
     private readonly clock: ClockService,
     private readonly audit: AuditService,
+    private readonly storage: AttachmentStorage,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -106,13 +108,15 @@ export class TasksService {
 
   async remove(id: string, actor: AuthenticatedUser): Promise<void> {
     const task = await this.access.task(id, actor, true);
-    await this.dataSource.transaction(async (manager) => {
+    const report = await this.dataSource.transaction(async (manager) => {
       const report = await deleteTasks(manager, [id]);
       await this.audit.record(
         { userId: actor.id, entity: 'task', entityId: id, action: 'delete', changes: { milestoneId: task.milestoneId, name: task.name, comments: report.comments, attachments: report.attachments } },
         manager,
       );
+      return report;
     });
+    await this.storage.removeMany(report.storageKeys);
   }
 
   private async view(id: string): Promise<TaskView> {
