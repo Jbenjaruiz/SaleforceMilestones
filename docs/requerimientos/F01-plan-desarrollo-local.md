@@ -79,7 +79,7 @@ Consecuencias:
 | 4. Autenticación, permisos, usuarios y roles | Hecho y probado contra la base real (34 comprobaciones) |
 | 5. Core: proyectos, hitos, tareas, cálculos, comentarios | Hecho y probado contra la base real (49 comprobaciones) |
 | 6. Adjuntos y auditoría completa | Hecho y probado contra la base real y el disco (28 comprobaciones) |
-| 7. Importación del Excel | Pendiente |
+| 7. Importación del Excel | Hecho y probado con la plantilla real (20 comprobaciones) |
 | 8. Frontend conectado a la API | Pendiente |
 
 ### API del paso 4 (prefijo `/api`)
@@ -124,3 +124,16 @@ Reglas implementadas: el hito no guarda fechas ni estado (se derivan de sus tare
 | `DELETE /attachments/:id` | Quien lo subió o Administrator | Borrar un adjunto |
 
 Reglas: solo PNG, JPG, WebP y PDF, **identificados por el contenido del archivo** (no por la extensión ni por el tipo que declare el navegador); máximo 5 MB por archivo y 5 por tarea o por comentario (contando los que ya tiene); los archivos se guardan en `STORAGE_DIR` con un nombre generado (el nombre original solo se guarda como dato, sin rutas ni caracteres de control); solo se descargan con sesión, con `X-Content-Type-Options: nosniff` y una política `sandbox`; no se pueden añadir archivos a un comentario ya creado; si algo falla al guardar, no quedan archivos huérfanos ni comentarios a medias; al borrar un comentario, tarea o hito se borran sus archivos del disco una vez confirmada la transacción; un proyecto archivado no admite subidas y es invisible para quien no es administrador.
+
+### API del paso 7 (prefijo `/api`, solo Administrator)
+
+| Ruta | Qué hace |
+|---|---|
+| `GET /imports/template` | Descarga la plantilla vacía (`.xlsx`) con un ejemplo |
+| `POST /projects/:projectId/import` (multipart, campo `file`; `?dryRun=true` solo valida) | Importa hitos y tareas en un proyecto existente |
+
+Plantilla: hoja `Plantilla` (o la primera hoja), una fila por tarea, columnas `CodigoHito`, `NombreHito`, `DescripcionHito`, `Tarea`, `Responsable`, `FechaInicio`, `FechaEstimada`. Los encabezados se reconocen sin importar mayúsculas, acentos ni espacios. Las fechas pueden ser fechas de Excel, números de serie o texto `AAAA-MM-DD` (un texto como `03/04/2026` se rechaza por ambiguo).
+
+Reglas: **todo o nada** (con cualquier error no se guarda nada y se devuelven todos los problemas a la vez, con fila, columna y código; hasta 200); se rechazan los códigos que ya existen en el proyecto, las filas con datos faltantes o inválidas, un hito con nombres distintos en filas distintas y una tarea repetida dentro de un hito; no crea proyectos ni toca hitos existentes; no admite proyectos archivados; máximo 5 MB y 2000 filas; queda registrada en la auditoría con el nombre del archivo y los códigos.
+
+Nota técnica: se lee con `exceljs` y no con `xlsx` (SheetJS), porque la versión publicada en npm de SheetJS tiene vulnerabilidades conocidas al abrir archivos manipulados y aquí el archivo lo sube un usuario.

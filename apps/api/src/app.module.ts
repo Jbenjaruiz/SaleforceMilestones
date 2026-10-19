@@ -11,6 +11,7 @@ import { buildDatabaseOptions } from './database/database.config';
 import { CommentsModule } from './comments/comments.module';
 import { CoreModule } from './core/core.module';
 import { HealthModule } from './health/health.module';
+import { ImportsModule } from './imports/imports.module';
 import { MilestonesModule } from './milestones/milestones.module';
 import { ProjectsModule } from './projects/projects.module';
 import { RolesModule } from './roles/roles.module';
@@ -39,6 +40,7 @@ import { UsersModule } from './users/users.module';
     TasksModule,
     CommentsModule,
     AttachmentsModule,
+    ImportsModule,
     HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
