@@ -1,6 +1,26 @@
 # Seguimiento de Desarrollo Salesforce
 
-Tablero ejecutivo **de solo lectura** (React + Vite + SheetJS). Lee `public/data/seguimiento_salesforce.xlsx` al cargar y calcula avance y retrasos en el navegador. Sin backend, base de datos ni autenticación: es un sitio estático.
+Tablero ejecutivo **de solo lectura** (React + Vite + SheetJS). Lee `apps/web/public/data/seguimiento_salesforce.xlsx` al cargar y calcula avance y retrasos en el navegador. Hoy es un sitio estático, sin backend ni autenticación.
+
+> **En transición (F01).** El repositorio es ahora un monorepo: `apps/web` (este tablero) y `apps/api` (NestJS + SQL Server, en construcción). Requerimientos y plan en `docs/requerimientos/`. Mientras la API no esté lista, el tablero sigue leyendo el Excel.
+
+## Monorepo
+
+```
+apps/web/   frontend React + Vite
+apps/api/   API NestJS (TypeORM + SQL Server)
+docs/       requerimientos e importación
+scripts/    generadores de datos y plantillas
+```
+
+### API local (conexión a la base remota)
+
+```sh
+cp apps/api/.env.example apps/api/.env   # complete DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+npm run dev:api                          # http://localhost:3000/api/health
+```
+
+`apps/api/.env` no se versiona. Con la API arriba, `npm run dev` levanta API y frontend juntos; Vite redirige `/api` a `localhost:3000`.
 
 Identidad visual tomada de LucalzaLanding (`#005153`, `#1e3238`, `#ecab23`, Plus Jakarta Sans / Inter y el logotipo).
 
@@ -9,17 +29,18 @@ Identidad visual tomada de LucalzaLanding (`#005153`, `#1e3238`, `#ecab23`, Plus
 ```sh
 nvm use 24
 npm install
-npm run dev          # desarrollo
-npm test             # pruebas (Vitest)
-npm run build        # versión publicable en dist/
-npm run preview      # probar dist/ localmente
+npm run dev:web      # solo el frontend (no necesita base de datos)
+npm run dev          # API + frontend (la API necesita apps/api/.env)
+npm test             # pruebas de ambos (Vitest y Jest)
+npm run build        # frontend en apps/web/dist/ y API en apps/api/dist/
+npm run preview -w @seguimiento/web   # probar el frontend compilado
 ```
 
 El sitio usa rutas relativas (`base: './'`), por lo que funciona en la raíz o en una subruta del hosting.
 
 ## Actualizar los datos
 
-1. Cierre el libro en Excel, edítelo y guárdelo **con el mismo nombre y ruta**: `public/data/seguimiento_salesforce.xlsx`.
+1. Cierre el libro en Excel, edítelo y guárdelo **con el mismo nombre y ruta**: `apps/web/public/data/seguimiento_salesforce.xlsx`.
 2. En un sitio ya publicado, basta con reemplazar ese archivo: no hace falta recompilar. Los usuarios pulsan **Actualizar datos**.
 3. La lectura usa `cache: 'no-store'` y un parámetro `?v=` único. Para el hosting, `public/_headers` pide `Cache-Control: no-store` en `/data/*` (Netlify/Cloudflare Pages); en otros servidores configure lo mismo.
 
@@ -61,6 +82,6 @@ Derivado de `Hallazgos-Revisión-CC01-08.10.2026.V3.xlsx`: 6 hitos y 28 tareas c
 
 ## Despliegue en GitHub Pages
 
-El workflow `.github/workflows/deploy.yml` ejecuta pruebas, compila y publica `dist/` en cada push a `main`. En el repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions**. El sitio queda en `https://<usuario>.github.io/<repositorio>/`.
+El workflow `.github/workflows/deploy.yml` ejecuta las pruebas del frontend, compila y publica `apps/web/dist/` en cada push a `main`. En el repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions**. El sitio queda en `https://<usuario>.github.io/<repositorio>/`.
 
-Para actualizar los datos en producción: reemplace `public/data/seguimiento_salesforce.xlsx`, haga commit y push a `main`; el workflow lo vuelve a publicar. Los usuarios ven el cambio al recargar o con **Actualizar datos** (la lectura evita la caché).
+Para actualizar los datos en producción: reemplace `apps/web/public/data/seguimiento_salesforce.xlsx`, haga commit y push a `main`; el workflow lo vuelve a publicar. Los usuarios ven el cambio al recargar o con **Actualizar datos** (la lectura evita la caché).

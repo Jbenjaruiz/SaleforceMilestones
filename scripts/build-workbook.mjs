@@ -1,11 +1,11 @@
-// Genera public/data/seguimiento_salesforce.xlsx a partir de scripts/workbook-data.mjs.
+// Genera apps/web/public/data/seguimiento_salesforce.xlsx a partir de scripts/workbook-data.mjs.
 // Uso: npm run build:data [ruta de salida]   (cierre el libro en Excel antes: si está abierto, Windows bloquea la escritura).
 import fs from 'node:fs';
 import path from 'node:path';
 import * as XLSX from 'xlsx';
 import { config, milestones, PROVISIONAL, tasks } from './workbook-data.mjs';
 
-const output = path.resolve(process.argv[2] ?? 'public/data/seguimiento_salesforce.xlsx');
+const output = path.resolve(process.argv[2] ?? 'apps/web/public/data/seguimiento_salesforce.xlsx');
 
 const excelSerial = (date) => (Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(1899, 11, 30)) / 86_400_000;
 const dateCell = (date) => ({ t: 'n', v: excelSerial(date), z: 'yyyy-mm-dd' });
