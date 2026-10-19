@@ -53,3 +53,18 @@ Los cálculos de avance y retraso ya existen y están probados en el frontend (`
 ## 5. Primer hito concreto
 
 Cuando tenga acceso a la base: pasos 1 a 3. Resultado verificable: la API arranca, se conecta a SQL Server, las migraciones crean las tablas y existe el usuario administrador.
+
+## 6. Resultado de la prueba de conexión (19 oct 2026)
+
+| Comprobación | Resultado |
+|---|---|
+| Red | El puerto 1433 del servidor responde desde la máquina de desarrollo |
+| Cifrado | Con `DB_ENCRYPT=true` falla (`socket hang up`): el servidor no completa el cifrado TLS que exige Node 24. Con `DB_ENCRYPT=false` conecta |
+| Versión | **SQL Server 2012 SP4**, fuera de soporte desde 2022. Admite lo que usa F01 (índices filtrados, `CHECK`, `datetime2`, `uniqueidentifier`, paginación), pero no `DROP … IF EXISTS` ni funciones JSON/`STRING_AGG` (2016+) |
+| Base | `fw_project`, intercalación `SQL_Latin1_General_CP1_CI_AS` (sin distinguir mayúsculas ni acentos), 0 tablas |
+| Permisos del usuario | **No puede crear tablas ni alterar** (`CREATE TABLE = 0`, `ALTER = 0`). Bloquea el paso 3 (migraciones) |
+
+Consecuencias:
+- La conexión sin cifrar envía credenciales en claro. Aceptable en red interna de pruebas; no para producción. Conviene pedir una versión de SQL Server soportada o un certificado/TLS compatible antes del despliegue.
+- Las migraciones deben evitar sintaxis posterior a 2012.
+- Para continuar, quien administre el servidor debe dar al usuario, sobre `fw_project`, al menos los roles `db_ddladmin`, `db_datareader` y `db_datawriter`.
