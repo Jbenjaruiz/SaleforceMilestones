@@ -132,6 +132,7 @@ erDiagram
         uniqueidentifier id PK
         nvarchar name UK
         nvarchar description
+        bit is_protected "el Administrador no se borra"
     }
     PERMISSION {
         uniqueidentifier id PK
