@@ -39,7 +39,7 @@ Cada punto afecta al diseño; hasta resolverlo, el documento de la feature lo tr
 | 29 | Hito | Sin check propio: su porcentaje de avance y su finalización dependen de sus tareas. Su retraso es la suma de los días de retraso de sus tareas atrasadas. El retraso global es la suma de todas las tareas. |
 | 30 | Datos del CC en el hito | Solo nombre y descripción (además del código). Sin horas ni etapa. |
 | 31 | Origen de las tareas | Pueden surgir de los hallazgos o de los requerimientos del CC. |
-| 32 | Tareas sin CC | Se decidirá después cómo agregarles un hito. Mientras tanto no se importan. |
+| 32 | Tareas sin CC | Se agrupan en un hito general con código marcador `CC-GEN` («Gestión contractual y transversal del CC-001 Rev. 3»), incluido en la plantilla de importación (28 tareas, 11 hitos). |
 | 33 | Responsable | Opcional, texto libre por ahora, en la tarea. |
 
 ### Siguen abiertas

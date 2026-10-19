@@ -44,6 +44,8 @@ const HOLIDAYS = [
 ];
 const holidaySet = new Set(HOLIDAYS.map(([d]) => d));
 
+const GENERAL_CODE = 'CC-GEN';
+
 // Hitos: título y justificación tomados de FWY-SF-LUCALZA-CC-001 Rev. 3.
 const MILESTONES = {
   'CC-C01': ['Visualización de stock por bodega durante la cotización en Core', 'El vendedor necesita ver la disponibilidad de producto en las diferentes bodegas (venta y visualización) en el momento de capturar el pedido.'],
@@ -56,6 +58,8 @@ const MILESTONES = {
   'CC-C11': ['Captura de información de impuesto del prospecto en Salesforce para su posterior envío a SAP', 'La integración de alta de socios de negocio no envía información fiscal, y los valores de impuesto válidos difieren por país y empresa.'],
   'CC-C13': ['Pedido sugerido nativo de Consumer Goods Cloud en la App Offline', 'La fuente del pedido sugerido pasa de Kin a la sugerencia nativa de Consumer Goods Cloud, configurada en el Order Template y ejecutada en la App Offline.'],
   'CC-M01': ['Visualización de stock por bodega durante la cotización en la App Offline (Modeler)', 'El vendedor que opera sin conexión también necesita conocer el stock por bodega al capturar el pedido.'],
+  // Hito sintético para las tareas que ningún control de cambio respalda. El código es un marcador, no un CC del PDF.
+  [GENERAL_CODE]: ['Gestión contractual y transversal del CC-001 Rev. 3', 'Tareas del análisis de Lucalza que no pertenecen a ningún control de cambio del documento: correcciones fuera del alcance de los CC, condiciones de pago y plazo, y actualización del documento de diseño.'],
 };
 
 const toKey = (d) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
@@ -76,8 +80,8 @@ function addBusinessDays(date, n) {
 const excelSerial = (d) => (d.getTime() - Date.UTC(1899, 11, 30)) / 86_400_000;
 const dateCell = (d) => ({ t: 'n', v: excelSerial(d), z: 'yyyy-mm-dd' });
 
-// Una tarea pertenece al primer código que cita; sin código no entra.
-const withCode = allTasks.filter((t) => t.cc.length > 0).map((t, index) => ({ ...t, code: t.cc[0], index }));
+// Una tarea pertenece al primer código que cita; sin código va al hito general.
+const withCode = allTasks.map((t, index) => ({ ...t, code: t.cc[0] ?? GENERAL_CODE, index }));
 const byCode = new Map();
 for (const t of withCode) {
   if (!MILESTONES[t.code]) throw new Error(`Código sin hito definido: ${t.code}`);
@@ -136,7 +140,7 @@ XLSX.utils.book_append_sheet(workbook, sheet(
     ['Hitos con tareas', `${byCode.size}: ${[...byCode.keys()].join(', ')}`],
     ['Hitos del PDF sin tareas', 'CC-C09 y CC-C12: ninguna tarea los cita como primer código, así que no se crean hasta que tengan tareas'],
     ['Tarea con varios CC', 'Se asigna solo al primer código; los originales están en la hoja Referencia'],
-    ['Tareas sin CC', 'Quedan fuera (5): pendientes de decidir a qué hito se asignan'],
+    ['Tareas sin CC', `Las 5 tareas sin control de cambio van al hito ${GENERAL_CODE} (código marcador, no es un CC del PDF)`],
     ['Responsable', 'Vacío: los documentos no lo confirman'],
     ['Fin del último hito', toKey(new Date(Date.UTC(1899, 11, 30) + lastEnd * 86_400_000))],
   ],

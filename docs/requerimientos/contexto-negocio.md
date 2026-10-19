@@ -53,7 +53,7 @@ El PDF formaliza **12 controles de cambio**, cada uno con la misma estructura: j
 | El proyecto natural es **una revisión del documento de cambios** (`FWY-SF-LUCALZA-CC-001`, Rev. 3). | Nombre sugerido del primer proyecto: «CC-001 Rev. 3 (8 oct 2026)». Un CC-002 u otra revisión sería otro proyecto. |
 | Cada hito (CC) tiene **código, título, horas estimadas y etapa** en el documento. | **Decidido:** el hito solo guarda código, nombre y descripción; las horas y la etapa no se incluyen. |
 | Los CC tienen **requerimientos numerados** (p. ej. C01 tiene 5, C04 tiene 6). | **Decidido:** las tareas pueden surgir de los hallazgos o de los requerimientos. |
-| **5 de las 28 tareas actuales no pertenecen a ningún CC** (contactos que no sincronizan, vista de seguimiento de supervisores, pago por hitos, cronograma, actualizar documento de diseño). | Con «código obligatorio» no tendrían hito. **Decidido:** no se importan por ahora; se resolverá más adelante cómo darles un hito. |
+| **5 de las 28 tareas actuales no pertenecen a ningún CC** (contactos que no sincronizan, vista de seguimiento de supervisores, pago por hitos, cronograma, actualizar documento de diseño). | Con «código obligatorio» no tendrían hito. **Decidido:** van a un hito general con código marcador `CC-GEN`. |
 | **6 tareas citan varios CC** (hasta 8). | **Decidido:** se toma solo el primer código de la celda. |
 | Una tarea cita `CC-M03`, que ya no existe. | Se debe cambiar o descartar al importar. |
 | Hay tareas de **Lucalza e Inforum**, no solo de Freeway. | **Decidido:** `Responsable` se conserva como campo opcional de texto libre en la tarea. |
