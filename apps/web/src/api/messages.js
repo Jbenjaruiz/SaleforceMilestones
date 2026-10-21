@@ -23,6 +23,7 @@ const EXACT = {
   'This project is archived. Reactivate it to make changes.': 'Este proyecto está archivado. Reactívelo para hacer cambios.',
   'The project is already archived.': 'El proyecto ya está archivado.',
   'The project is not archived.': 'El proyecto no está archivado.',
+  'A finished task cannot be sent for client validation.': 'Una tarea finalizada no se puede enviar a validación del cliente.',
   'The estimated date cannot be earlier than the start date.': 'La fecha estimada no puede ser anterior a la de inicio.',
   'Only the author or an administrator can delete a comment.': 'Solo el autor o un administrador puede borrar un comentario.',
   'Only whoever uploaded the file or an administrator can delete it.': 'Solo quien subió el archivo o un administrador puede borrarlo.',

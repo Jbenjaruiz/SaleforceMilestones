@@ -13,6 +13,7 @@ export interface TaskView {
   estimatedDate: string;
   actualDate: string | null;
   isCompleted: boolean;
+  readyForValidation: boolean;
   status: TaskStatus;
   delayDays: number;
   sortOrder: number;
@@ -47,6 +48,7 @@ export const toTaskView = (task: Task, today: string): TaskView => ({
   estimatedDate: task.estimatedDate,
   actualDate: task.actualDate,
   isCompleted: task.isCompleted,
+  readyForValidation: task.readyForValidation,
   status: taskStatus(task, today),
   delayDays: taskDelayDays(task, today),
   sortOrder: task.sortOrder,

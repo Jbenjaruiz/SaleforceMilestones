@@ -114,6 +114,7 @@
 .badge--done, .badge--ontime { background: var(--done-bg); color: var(--done-fg); }
 .badge--late { background: var(--late-bg); color: var(--late-fg); }
 .badge--invalid { background: var(--warn-bg); color: var(--warn-fg); }
+.badge--validation { background: var(--warn-bg); color: var(--warn-fg); }
 .badge--muted { background: var(--pending-bg); color: var(--muted); }
 
 .tag { display: inline-block; padding: 1px 8px; border-radius: 6px; font: 600 12px/1.6 var(--font-body); }
@@ -203,6 +204,7 @@
   background: transparent; color: var(--muted); cursor: pointer;
 }
 .icon-button:hover:not(:disabled) { background: var(--brand-soft); color: var(--brand); }
+.icon-button.is-on { background: var(--warn-bg); color: var(--warn-fg); }
 .icon-button--danger:hover:not(:disabled) { background: var(--late-bg); color: var(--late-fg); }
 
 /* ---------- Barra del tablero ---------- */

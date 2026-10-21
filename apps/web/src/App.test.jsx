@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App.jsx';
-import { ADMIN, dashboard, EDITOR, mockApi, permissionsFor, REVIEWER, signedInAs } from './test/mockApi.js';
+import { ADMIN, dashboard, EDITOR, milestone, mockApi, permissionsFor, REVIEWER, signedInAs, task } from './test/mockApi.js';
 
 const PROJECTS = [{ id: 'p1', name: 'CC-001 Rev. 3', description: null, isArchived: false, createdAt: '2026-10-01T00:00:00Z' }, { id: 'p2', name: 'Otro proyecto', description: null, isArchived: false, createdAt: '2026-10-02T00:00:00Z' }];
 
@@ -244,6 +244,30 @@ describe('edición', () => {
 
     await waitFor(() => expect(api.called('PUT /tasks/t1/completion')[0].body).toEqual({ completed: true }));
     await waitFor(() => expect(api.called('GET /projects/p1/dashboard').length).toBeGreaterThan(1));
+  });
+
+  it('el botón de validación marca la tarea como lista para el cliente', async () => {
+    const user = userEvent.setup();
+    const api = board(EDITOR, { 'PUT /tasks/t1/validation': { id: 't1' } });
+    render(<App />);
+    await openFirstMilestone(user);
+    await user.click(screen.getByRole('button', { name: 'Marcar «Definir regla de precios» como lista para la validación del cliente' }));
+
+    await waitFor(() => expect(api.called('PUT /tasks/t1/validation')[0].body).toEqual({ ready: true }));
+  });
+
+  it('una tarea marcada muestra la etiqueta y se puede desmarcar', async () => {
+    const user = userEvent.setup();
+    const api = board(EDITOR, {
+      'PUT /tasks/t1/validation': { id: 't1' },
+      'GET /projects/p1/dashboard': dashboard({ permissions: permissionsFor(EDITOR), milestones: [milestone({ tasks: [task({ readyForValidation: true })] })] }),
+    });
+    render(<App />);
+    await openFirstMilestone(user);
+    expect(screen.getByText('Validación del cliente')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Quitar «Definir regla de precios» de la validación del cliente' }));
+
+    await waitFor(() => expect(api.called('PUT /tasks/t1/validation')[0].body).toEqual({ ready: false }));
   });
 
   it('una tarea finalizada se reabre con el mismo botón', async () => {

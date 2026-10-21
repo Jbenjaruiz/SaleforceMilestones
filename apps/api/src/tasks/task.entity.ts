@@ -35,6 +35,10 @@ export class Task {
   @Column({ name: 'is_completed', type: 'bit', default: false })
   isCompleted: boolean;
 
+  /** F03: set by hand when the work is ready for the client to validate; cleared when the task is finished. */
+  @Column({ name: 'ready_for_validation', type: 'bit', default: false })
+  readyForValidation: boolean;
+
   @Column({ name: 'sort_order', type: 'int', default: 0 })
   sortOrder: number;
 

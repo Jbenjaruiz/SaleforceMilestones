@@ -14,7 +14,7 @@ export const permissionsFor = (user) => (user.isAdmin ? PERMISSIONS.all : user.i
 
 export const task = (overrides = {}) => ({
   id: 't1', milestoneId: 'm1', name: 'Definir regla de precios', responsible: 'Inforum', startDate: '2026-10-12', estimatedDate: '2026-10-16',
-  actualDate: null, isCompleted: false, status: 'in_progress', delayDays: 3, sortOrder: 1, ...overrides,
+  actualDate: null, isCompleted: false, readyForValidation: false, status: 'in_progress', delayDays: 3, sortOrder: 1, ...overrides,
 });
 
 export const milestone = (overrides = {}) => ({

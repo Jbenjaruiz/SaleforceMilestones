@@ -8,6 +8,7 @@ Este directorio recoge los requerimientos de las nuevas features. Por ahora **so
 |---|---|---|
 | [F01](F01-base-de-datos-y-backend.md) | Base de datos y backend en NestJS (usuarios, roles y permisos, core) | Aprobada; solo pendiente el despliegue en Azure |
 | [F02](F02-asignacion-de-proyectos.md) | Asignación de proyectos a usuarios con permisos por proyecto | Implementada y verificada contra la base real |
+| [F03](F03-validacion-del-cliente.md) | Marca «Validación del cliente» en las tareas | Implementada; falta ejecutar el script en la base |
 | [F01-despliegue](F01-despliegue-azure.md) | Despliegue en una máquina virtual Windows de Azure (IIS + servicio de Windows) | Propuesta, pendiente de TI |
 
 Preguntas sin resolver: [preguntas-abiertas.md](preguntas-abiertas.md).

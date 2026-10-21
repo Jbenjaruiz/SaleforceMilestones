@@ -13,6 +13,7 @@ const stored = (overrides = {}) => ({
   estimatedDate: '2026-10-23',
   actualDate: null,
   isCompleted: false,
+  readyForValidation: false,
   sortOrder: 1,
   ...overrides,
 });
@@ -71,5 +72,40 @@ describe('TasksService dates', () => {
     await expect(service.create('m1', { name: 'X', startDate: '2026-10-20', estimatedDate: '2026-10-19' }, actor)).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.update('t1', { estimatedDate: '2026-10-01' }, actor)).rejects.toThrow(/earlier than the start date/);
     await expect(service.update('t1', { startDate: '2026-11-01' }, actor)).rejects.toThrow(/earlier than the start date/);
+  });
+});
+
+describe('TasksService.setValidation', () => {
+  it('marks an open task as ready for the client and records it', async () => {
+    const { service, updates, audit } = setup();
+    const view = await service.setValidation('t1', true, actor);
+    expect(updates[0]).toMatchObject({ readyForValidation: true });
+    expect(view).toMatchObject({ readyForValidation: true, isCompleted: false, actualDate: null });
+    expect(audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'request_validation' }), expect.anything());
+  });
+
+  it('takes the mark off', async () => {
+    const { service, audit } = setup(stored({ readyForValidation: true }));
+    const view = await service.setValidation('t1', false, actor);
+    expect(view.readyForValidation).toBe(false);
+    expect(audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'cancel_validation' }), expect.anything());
+  });
+
+  it('does nothing when the task is already in the requested state', async () => {
+    const { service, updates, audit } = setup(stored({ readyForValidation: true }));
+    await service.setValidation('t1', true, actor);
+    expect(updates).toHaveLength(0);
+    expect(audit.record).not.toHaveBeenCalled();
+  });
+
+  it('refuses to send a finished task for validation', async () => {
+    const { service } = setup(stored({ isCompleted: true, actualDate: '2026-10-20' }));
+    await expect(service.setValidation('t1', true, actor)).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('keeps the mark while the task is open and clears it when the task is finished', async () => {
+    const { service } = setup(stored({ readyForValidation: true }));
+    const finished = await service.setCompletion('t1', true, actor);
+    expect(finished.readyForValidation).toBe(false);
   });
 });

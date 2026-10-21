@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from
 import { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/decorators';
 import { ParseGuidPipe } from '../common/guid';
-import { CreateTaskDto, SetCompletionDto, UpdateTaskDto } from './dto/task.dto';
+import { CreateTaskDto, SetCompletionDto, SetValidationDto, UpdateTaskDto } from './dto/task.dto';
 import { TasksService } from './tasks.service';
 
 @Controller()
@@ -28,6 +28,12 @@ export class TasksController {
   @Put('tasks/:id/completion')
   setCompletion(@Param('id', ParseGuidPipe) id: string, @Body() dto: SetCompletionDto, @CurrentUser() actor: AuthenticatedUser) {
     return this.tasks.setCompletion(id, dto.completed, actor);
+  }
+
+  /** `{ "ready": true }` marks the task as ready for the client to validate; `false` takes the mark off. */
+  @Put('tasks/:id/validation')
+  setValidation(@Param('id', ParseGuidPipe) id: string, @Body() dto: SetValidationDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.tasks.setValidation(id, dto.ready, actor);
   }
 
   @HttpCode(204)

@@ -47,6 +47,11 @@ export class UpdateTaskDto {
   estimatedDate?: string;
 }
 
+export class SetValidationDto {
+  @IsBoolean()
+  ready: boolean;
+}
+
 export class SetCompletionDto {
   @IsBoolean()
   completed: boolean;

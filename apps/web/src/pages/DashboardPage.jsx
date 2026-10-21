@@ -64,6 +64,11 @@ export default function DashboardPage() {
     try { await mutate(() => api.put(`/tasks/${task.id}/completion`, { completed: !task.isCompleted }), { notify: true }); } catch { /* el aviso ya se mostró */ } finally { setBusyTaskId(null); }
   };
 
+  const toggleValidation = async (task) => {
+    setBusyTaskId(task.id);
+    try { await mutate(() => api.put(`/tasks/${task.id}/validation`, { ready: !task.readyForValidation }), { notify: true }); } catch { /* el aviso ya se mostró */ } finally { setBusyTaskId(null); }
+  };
+
   const actions = {
     onOpenMilestoneActivity: (milestone) => setModal({ type: 'activity', target: { type: 'milestone', id: milestone.id, title: `${milestone.code} · ${milestone.name}` } }),
     ...(perms.create && { onAddTask: (milestone) => setModal({ type: 'task', milestone }) }),
@@ -74,6 +79,7 @@ export default function DashboardPage() {
       onOpenActivity: (task) => setModal({ type: 'activity', target: { type: 'task', id: task.id, title: task.name } }),
       ...(perms.update && {
         onToggle: toggleTask,
+        onValidation: toggleValidation,
         onEdit: (task) => setModal({ type: 'task', task, milestone: data.milestones.find((m) => m.id === task.milestoneId) }),
       }),
       ...(perms.delete && { onDelete: (task) => setModal({ type: 'delete-task', task }) }),

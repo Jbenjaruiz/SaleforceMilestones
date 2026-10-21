@@ -48,6 +48,7 @@ export class TasksService {
           estimatedDate: dto.estimatedDate,
           actualDate: null,
           isCompleted: false,
+          readyForValidation: false,
           sortOrder: (max ?? 0) + 1,
           createdBy: actor.id,
         }),
@@ -97,9 +98,32 @@ export class TasksService {
 
     const actualDate = completed ? this.clock.today() : null;
     await this.dataSource.transaction(async (manager) => {
-      await manager.getRepository(Task).update(id, { isCompleted: completed, actualDate, updatedBy: actor.id, updatedAt: new Date() });
+      // Finishing closes the validation: the mark is only meaningful while the task is still open.
+      await manager.getRepository(Task).update(id, { isCompleted: completed, actualDate, readyForValidation: false, updatedBy: actor.id, updatedAt: new Date() });
       await this.audit.record(
         { userId: actor.id, entity: 'task', entityId: id, action: completed ? 'complete' : 'uncomplete', changes: { before: { actualDate: task.actualDate }, after: { actualDate } } },
+        manager,
+      );
+    });
+    return this.view(id);
+  }
+
+  /**
+   * F03: marks the task as ready for the client to validate (or takes the mark off). It does not finish the task,
+   * set any date or change the delay; it stays until someone removes it or the task is finished. Repeating the
+   * current state does nothing.
+   */
+  async setValidation(id: string, ready: boolean, actor: AuthenticatedUser): Promise<TaskView> {
+    const task = await this.access.task(id, actor, 'update');
+    if (ready && task.isCompleted) {
+      throw new BadRequestException('A finished task cannot be sent for client validation.');
+    }
+    if (task.readyForValidation === ready) return this.view(id);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(Task).update(id, { readyForValidation: ready, updatedBy: actor.id, updatedAt: new Date() });
+      await this.audit.record(
+        { userId: actor.id, entity: 'task', entityId: id, action: ready ? 'request_validation' : 'cancel_validation', changes: { before: { readyForValidation: !ready }, after: { readyForValidation: ready } } },
         manager,
       );
     });

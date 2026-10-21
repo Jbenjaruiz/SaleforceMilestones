@@ -5,7 +5,7 @@ import { EmptyState } from './States.jsx';
 
 /**
  * `actions` es opcional; cada función aparece solo si el usuario tiene el permiso correspondiente:
- * onToggle (modificar), onEdit (modificar), onDelete (eliminar) y onOpenActivity (ver).
+ * onToggle (modificar), onValidation (modificar), onEdit (modificar), onDelete (eliminar) y onOpenActivity (ver).
  */
 export default function TaskList({ tasks, id, actions = {} }) {
   if (!tasks.length) return <EmptyState>Este hito todavía no tiene tareas.</EmptyState>;
@@ -42,6 +42,7 @@ export default function TaskList({ tasks, id, actions = {} }) {
 
           <div className="task__meta">
             <StatusBadge status={task.status} />
+            {task.readyForValidation && !task.isCompleted && <span className="badge badge--validation">Validación del cliente</span>}
             <DelayBadge days={task.delayDays} />
           </div>
 
@@ -49,6 +50,19 @@ export default function TaskList({ tasks, id, actions = {} }) {
             {actions.onOpenActivity && (
               <button type="button" className="icon-button" onClick={() => actions.onOpenActivity(task)} aria-label={`Comentarios y adjuntos de «${task.name}»`} title="Comentarios y adjuntos">
                 <Icon name="comment" />
+              </button>
+            )}
+            {actions.onValidation && !task.isCompleted && (
+              <button
+                type="button"
+                className={`icon-button${task.readyForValidation ? ' is-on' : ''}`}
+                aria-pressed={task.readyForValidation}
+                aria-label={task.readyForValidation ? `Quitar «${task.name}» de la validación del cliente` : `Marcar «${task.name}» como lista para la validación del cliente`}
+                title={task.readyForValidation ? 'Quitar de la validación del cliente' : 'Lista para la validación del cliente'}
+                disabled={actions.busyTaskId === task.id}
+                onClick={() => actions.onValidation(task)}
+              >
+                <Icon name="validate" />
               </button>
             )}
             {actions.onEdit && (
