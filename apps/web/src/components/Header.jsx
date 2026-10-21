@@ -17,7 +17,7 @@ export default function Header() {
         <img className="header__logo" src={`${import.meta.env.BASE_URL}images/lucalza-logo.png`} alt="Lucalza" width="124" height="51" />
         <div className="header__title">
           <p className="eyebrow">Tablero ejecutivo</p>
-          <h1>Seguimiento de Desarrollo Salesforce</h1>
+          <h1>Proyectos corporativos</h1>
         </div>
         <div className="header__meta">
           <nav className="header__nav" aria-label="Principal">

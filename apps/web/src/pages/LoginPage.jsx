@@ -18,7 +18,7 @@ export default function LoginPage() {
       <form className="login__card" onSubmit={submit}>
         <img className="login__logo" src={`${import.meta.env.BASE_URL}images/lucalza-logo.png`} alt="Lucalza" width="124" height="51" />
         <p className="eyebrow">Tablero ejecutivo</p>
-        <h1>Seguimiento de Desarrollo Salesforce</h1>
+        <h1>Proyectos corporativos</h1>
         <label className="field field--form">
           <span>Correo</span>
           <input type="email" autoComplete="username" required autoFocus value={values.email} onChange={(event) => setValues({ ...values, email: event.target.value })} />
