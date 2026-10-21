@@ -88,7 +88,7 @@ Para generar un `JWT_SECRET`: `node -e "console.log(require('crypto').randomByte
 
 ### 5. Crear el esquema y los datos iniciales
 
-**Esquema** (omítalo si ya existe, opción A del paso 3). Hay **dos** partes: el esquema inicial y la tabla `project_members` de la asignación de proyectos (F02, script en [`docs/requerimientos/F02-asignacion-de-proyectos.md`](docs/requerimientos/F02-asignacion-de-proyectos.md)). Sin ella, los usuarios que no son administradores no ven proyectos y la edición de usuarios falla.
+**Esquema** (omítalo si ya existe, opción A del paso 3). Hay **dos** partes: el esquema inicial y la tabla `project_members` de la asignación de proyectos (F02, script en [`docs/requerimientos/F02-asignacion-de-proyectos.md`](docs/requerimientos/F02-asignacion-de-proyectos.md)). Sin ella, los usuarios que no son administradores no ven proyectos y la edición de usuarios falla. Quien administre la base debe ejecutarla además del esquema inicial.
 
 - *Opción 1, con migraciones* (el usuario de la base necesita permisos de DDL): `npm run migration:run -w @seguimiento/api`
   Aviso: la migración se validó con el analizador de SQL Server 2012 y la herramienta se comprobó hasta el punto de conectarse, pero **aún no se ha ejecutado de verdad contra una base** (el usuario de pruebas no tiene DDL; el esquema real se creó con el script SQL). Si falla, use la opción 2 y avise.

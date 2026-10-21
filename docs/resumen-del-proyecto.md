@@ -122,7 +122,6 @@ Los scripts de comprobación contra la base real **no están en el repositorio**
 
 | Tema | Detalle |
 |---|---|
-| **Tabla `project_members` (F02)** | La asignación de proyectos está implementada pero la tabla **no existe todavía**: alguien con DDL debe ejecutar el script de [`requerimientos/F02-asignacion-de-proyectos.md`](requerimientos/F02-asignacion-de-proyectos.md) §5. Hasta entonces, las pantallas de asignación y los usuarios que no son administradores no funcionan; los administradores sí |
 | **Despliegue en Azure** | Plan en [`requerimientos/F01-despliegue-azure.md`](requerimientos/F01-despliegue-azure.md): máquina virtual Windows, IIS + servicio de Windows. Faltan las respuestas de TI (§9 del plan) |
 | **Cifrado de la base** | Resolver la versión/TLS de SQL Server antes de producción |
 | **Registro de migraciones** | Parte 3 del script SQL (requiere DDL) |

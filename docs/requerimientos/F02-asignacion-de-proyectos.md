@@ -1,6 +1,6 @@
 # F02 — Asignación de proyectos a usuarios, con permisos por proyecto
 
-**Estado:** implementado en el código; **falta crear la tabla `project_members`** en la base (requiere un usuario con permisos de DDL: ver el script de la §5).
+**Estado:** implementado, con la tabla `project_members` creada y **verificado contra la base real** (37 comprobaciones: permisos por proyecto, proyectos no asignados, archivados, cambio de rol y cuenta desactivada).
 
 ## 1. Qué cambia
 
