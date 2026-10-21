@@ -35,7 +35,7 @@ Conceptos clave:
 - **Retraso (días calendario):** tarea sin finalizar = días desde su fecha estimada hasta hoy; finalizada = fecha real − estimada. El del hito y el **global del proyecto son la suma** del retraso de sus tareas.
 - **Botón de check:** al marcar, la API fija la fecha real con **hoy** (en la zona `APP_TIMEZONE`); cada nuevo marcado fija una fecha nueva; al desmarcar se borra. La fecha real no se edita a mano.
 - **Fechas** = días calendario `AAAA-MM-DD`, sin hora ni zona horaria.
-- **Permisos globales:** Ver, Crear, Modificar, Eliminar (`read`, `create`, `update`, `delete`), iguales en todo el sistema. El rol **Administrator** (protegido) puede todo y es el único que gestiona usuarios, roles, contraseñas, proyectos e importaciones. Roles iniciales: Administrator y Reviewer (solo lectura).
+- **Permisos por proyecto (F02):** Ver, Crear, Modificar y Eliminar **sobre el contenido** de cada proyecto (hitos, tareas, comentarios, adjuntos), asignados a cada usuario en **Usuarios → Editar**. «Ver» es lo mismo que tener el proyecto asignado; sin asignaciones, el usuario no ve ningún proyecto. **La asignación manda: los permisos del rol ya no se usan.** El rol **Administrator** (protegido) ve y puede todo, sin asignación, y es el único que gestiona usuarios, roles, contraseñas, proyectos e importaciones. Roles iniciales: Administrator y Reviewer (hoy solo clasifican). Detalle en [`requerimientos/F02-asignacion-de-proyectos.md`](requerimientos/F02-asignacion-de-proyectos.md).
 - **Usuarios:** los crea un administrador; sin autoregistro ni «olvidé mi contraseña»; contraseña de 7 a 72 caracteres; siempre debe quedar un administrador activo; nadie puede desactivarse a sí mismo.
 - **Comentarios:** en hitos y tareas; no se editan; los borra su autor o un administrador.
 - **Adjuntos:** PNG, JPG, WebP y PDF (por contenido, no por extensión), máx. 5 MB y 5 por tarea o comentario; en disco; las tareas los admiten directamente, los hitos solo vía comentarios; los borra quien los subió o un administrador.
@@ -59,9 +59,9 @@ scripts/     generador de la plantilla de importación (usa scripts/workbook-dat
 - La API tiene el esquema fuera de TypeORM `synchronize`: **el esquema cambia solo con migraciones o con el script SQL**.
 - Identidad visual de Lucalza (`#005153`, `#1e3238`, `#ecab23`, Plus Jakarta Sans / Inter, logotipo).
 
-### Modelo de datos (9 tablas)
+### Modelo de datos (10 tablas)
 
-`roles` · `permissions` · `users` · `projects` · `milestones` · `tasks` · `comments` · `attachments` · `audit_logs`. Diagrama ER y diccionario en [`requerimientos/F01-base-de-datos-y-backend.md`](requerimientos/F01-base-de-datos-y-backend.md); script de creación en [`requerimientos/F01-script-creacion-tablas.md`](requerimientos/F01-script-creacion-tablas.md).
+`roles` · `permissions` (sin uso desde F02) · `users` · `projects` · `project_members` (F02) · `milestones` · `tasks` · `comments` · `attachments` · `audit_logs`. Diagrama ER y diccionario en [`requerimientos/F01-base-de-datos-y-backend.md`](requerimientos/F01-base-de-datos-y-backend.md); script de creación en [`requerimientos/F01-script-creacion-tablas.md`](requerimientos/F01-script-creacion-tablas.md).
 
 Restricciones destacadas (en la base, no solo en el código): código de hito único **por proyecto**; `estimated_date >= start_date`; `actual_date` solo si la tarea está finalizada; un comentario o adjunto pertenece a un hito/tarea **o** a un comentario, nunca a ambos; adjuntos limitados a 4 tipos y 5 MB.
 
@@ -71,11 +71,11 @@ Restricciones destacadas (en la base, no solo en el código): código de hito ú
 |---|---|
 | `GET /health` | Público |
 | `POST /auth/login` (10 intentos/min), `GET /auth/me` | Público / sesión |
-| `/users`, `/users/:id/password`, `/roles` | Solo Administrator |
-| `GET /projects`, `/projects/:id/dashboard` | `read` |
+| `/users`, `/users/:id/password`, `/roles`, `/users/:id/projects` (asignación de proyectos) | Solo Administrator |
+| `GET /projects`, `/projects/:id/dashboard` | Proyecto asignado (Ver) |
 | `POST/PATCH /projects`, `/projects/:id/archive`, `/unarchive` | Solo Administrator |
-| `/milestones`, `/tasks`, `PUT /tasks/:id/completion` | `create` / `update` / `delete` según la acción |
-| `/…/comments`, `/tasks/:id/attachments`, `GET /attachments/:id/download` | `read` / `create` / `update` |
+| `/milestones`, `/tasks`, `PUT /tasks/:id/completion` | Crear / Modificar / Eliminar **en el proyecto asignado** |
+| `/…/comments`, `/tasks/:id/attachments`, `GET /attachments/:id/download` | Ver / Crear (comentar) / Modificar (adjuntar a tareas) en el proyecto asignado |
 | `DELETE /comments/:id`, `DELETE /attachments/:id` | Autor/quien subió, o Administrator |
 | `GET /imports/template`, `POST /projects/:id/import` (`?dryRun=true`) | Solo Administrator |
 
@@ -122,6 +122,7 @@ Los scripts de comprobación contra la base real **no están en el repositorio**
 
 | Tema | Detalle |
 |---|---|
+| **Tabla `project_members` (F02)** | La asignación de proyectos está implementada pero la tabla **no existe todavía**: alguien con DDL debe ejecutar el script de [`requerimientos/F02-asignacion-de-proyectos.md`](requerimientos/F02-asignacion-de-proyectos.md) §5. Hasta entonces, las pantallas de asignación y los usuarios que no son administradores no funcionan; los administradores sí |
 | **Despliegue en Azure** | Plan en [`requerimientos/F01-despliegue-azure.md`](requerimientos/F01-despliegue-azure.md): máquina virtual Windows, IIS + servicio de Windows. Faltan las respuestas de TI (§9 del plan) |
 | **Cifrado de la base** | Resolver la versión/TLS de SQL Server antes de producción |
 | **Registro de migraciones** | Parte 3 del script SQL (requiere DDL) |
@@ -213,3 +214,8 @@ El proyecto se desarrolló en conversación con Claude Code. Estos son los mensa
 
 47. «hice merge de esta rama a la rama development, cambia a esa rama y revisa que todos los cambios estén ahí, luego elimina el flujo de github pages en esa rama (developmemt) actualiza la documentación, sube tambien el ultimo cambio y elimina la rama actual»
 48. «Listo, ya hice el merge de la rama actual a develop» *(se había pedido el merge, pero al revisar el remoto `development` seguía en el commit inicial; la aclaración llegó cuando el *pull request* #1 ya estaba fusionado)*
+
+### Fase 6: mejoras posteriores
+
+49. «levanta los servicios» / «dime si están detenidos los servicios, si no lo están, deténlos» *(operación del entorno local)*
+50. «Vamos a hacer algunos cambios y mejoras, para comenzar; cambia el encabezado de la página, en lugar de ¨Seguimiendo de Desarrollo Salesforce¨ diga ¨Proyectos corporativos¨. Necesito tambien que los proyectos creados puedan ser asignados a los usuarios desde la pantalla de ediciíon de usuarios, con permisos diferentes de visualización, creación, edición y eliminación del proyecto que se le asigne» *(respuestas a preguntas con opciones: «La asignación manda», «Ningún proyecto» para quien no tiene asignaciones y alcance «Al contenido del proyecto»)*

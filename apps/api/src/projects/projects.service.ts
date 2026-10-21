@@ -4,7 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/authenticated-user';
 import { ClockService } from '../common/clock.service';
-import { CoreAccessService } from '../core/core-access.service';
+import { CoreAccessService, ProjectPermissions } from '../core/core-access.service';
 import { ProjectSummary, summarizeProject } from '../core/metrics';
 import { MilestoneView, ProjectView, toMilestoneView, toProjectView } from '../core/views';
 import { Milestone } from '../milestones/milestone.entity';
@@ -19,6 +19,8 @@ export interface MilestoneAlert {
 
 export interface ProjectDashboard {
   project: ProjectView;
+  /** The requesting user's permissions in this project. */
+  permissions: ProjectPermissions;
   /** Calendar day the delays were computed against. */
   today: string;
   summary: ProjectSummary;
@@ -37,26 +39,31 @@ export class ProjectsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /** Archived projects only show up for administrators who ask for them. */
+  /**
+   * The selector: administrators see every project (archived ones only on request); everyone else sees only the
+   * projects assigned to them, each with their permissions in it.
+   */
   async list(actor: AuthenticatedUser, includeArchived = false): Promise<ProjectView[]> {
-    const showArchived = includeArchived && actor.isAdmin;
-    const projects = await this.projects.find({ where: showArchived ? {} : { isArchived: false }, order: { name: 'ASC' } });
-    return projects.map(toProjectView);
+    const accessible = await this.access.accessibleProjects(actor, includeArchived && actor.isAdmin);
+    return accessible.map(({ project, permissions }) => toProjectView(project, permissions));
   }
 
   async get(id: string, actor: AuthenticatedUser): Promise<ProjectView> {
-    return toProjectView(await this.access.project(id, actor));
+    const project = await this.access.project(id, actor, 'read');
+    return toProjectView(project, (await this.access.permissionsIn(id, actor)) as ProjectPermissions);
   }
 
   async dashboard(id: string, actor: AuthenticatedUser): Promise<ProjectDashboard> {
-    const project = await this.access.project(id, actor);
+    const project = await this.access.project(id, actor, 'read');
+    const permissions = (await this.access.permissionsIn(id, actor)) as ProjectPermissions;
     const today = this.clock.today();
     const milestones = (
       await this.milestones.find({ where: { projectId: id }, relations: { tasks: true }, order: { sortOrder: 'ASC', code: 'ASC' } })
     ).map((milestone) => toMilestoneView(milestone, today));
 
     return {
-      project: toProjectView(project),
+      project: toProjectView(project, permissions),
+      permissions,
       today,
       summary: summarizeProject(milestones),
       milestones,
@@ -77,7 +84,7 @@ export class ProjectsService {
   }
 
   async update(id: string, dto: UpdateProjectDto, actor: AuthenticatedUser): Promise<ProjectView> {
-    const project = await this.access.project(id, actor, true);
+    const project = await this.access.project(id, actor, 'update');
     const values = {
       ...(dto.name !== undefined ? { name: dto.name } : {}),
       ...(dto.description !== undefined ? { description: dto.description || null } : {}),
@@ -95,7 +102,7 @@ export class ProjectsService {
   }
 
   async setArchived(id: string, archived: boolean, actor: AuthenticatedUser): Promise<ProjectView> {
-    const project = await this.access.project(id, actor);
+    const project = await this.access.project(id, actor, 'read');
     if (project.isArchived === archived) {
       throw new BadRequestException(archived ? 'The project is already archived.' : 'The project is not archived.');
     }

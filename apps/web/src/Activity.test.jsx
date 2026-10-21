@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App.jsx';
-import { ADMIN, dashboard, EDITOR, mockApi, REVIEWER, signedInAs } from './test/mockApi.js';
+import { ADMIN, dashboard, EDITOR, mockApi, permissionsFor, REVIEWER, signedInAs } from './test/mockApi.js';
 
 const attachment = (overrides = {}) => ({
   id: 'a1', taskId: 't1', commentId: null, fileName: 'captura.png', contentType: 'image/png', sizeBytes: 2048,
@@ -21,7 +21,7 @@ afterEach(() => vi.unstubAllGlobals());
 const setup = (user, extra = {}) => mockApi({
   ...signedInAs(user),
   'GET /projects': PROJECTS,
-  'GET /projects/p1/dashboard': dashboard(),
+  'GET /projects/p1/dashboard': dashboard({ permissions: permissionsFor(user) }),
   'GET /tasks/t1/attachments': [],
   'GET /tasks/t1/comments': [],
   'GET /milestones/m1/comments': [],

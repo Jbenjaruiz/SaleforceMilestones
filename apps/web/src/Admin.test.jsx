@@ -24,7 +24,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 const admin = (hash, extra = {}) => {
   window.location.hash = hash;
-  return mockApi({ ...signedInAs(ADMIN), 'GET /projects': PROJECTS.slice(0, 1), 'GET /projects/p1/dashboard': dashboard(), 'GET /users': USERS, 'GET /roles': ROLES, 'GET /projects?includeArchived=true': PROJECTS, ...extra });
+  return mockApi({ ...signedInAs(ADMIN), 'GET /projects': PROJECTS.slice(0, 1), 'GET /projects/p1/dashboard': dashboard(), 'GET /users': USERS, 'GET /roles': ROLES, 'GET /projects?includeArchived=true': PROJECTS, 'GET /users/u-ed/projects': [], 'PUT /users/u-ed/projects': [], ...extra });
 };
 
 describe('acceso a la administración', () => {
@@ -80,6 +80,7 @@ describe('usuarios', () => {
 
     await user.click(screen.getByRole('button', { name: 'Editar a Eva Editora' }));
     const dialog = screen.getByRole('dialog');
+    await within(dialog).findByRole('group', { name: 'Acceso a proyectos' });
     await user.selectOptions(within(dialog).getByLabelText('Rol'), 'r3');
     await user.click(within(dialog).getByRole('checkbox', { name: /Cuenta activa/ }));
     await user.click(within(dialog).getByRole('button', { name: 'Guardar cambios' }));
@@ -102,6 +103,116 @@ describe('usuarios', () => {
   });
 });
 
+describe('acceso a proyectos de un usuario', () => {
+  const TWO_PROJECTS = [PROJECTS[0], { id: 'p3', name: 'Otro proyecto', description: null, isArchived: false, createdAt: '2026-10-03T10:00:00Z' }];
+  const open = async (user, name = 'Eva Editora') => {
+    await screen.findByText(name);
+    await user.click(screen.getByRole('button', { name: `Editar a ${name}` }));
+    const dialog = screen.getByRole('dialog');
+    const access = await within(dialog).findByRole('group', { name: 'Acceso a proyectos' });
+    return { dialog, access };
+  };
+
+  it('lista los proyectos activos con sus permisos actuales; «Ver» va siempre con la asignación', async () => {
+    const user = userEvent.setup();
+    admin('#/admin/users', {
+      'GET /projects': TWO_PROJECTS,
+      'GET /users/u-ed/projects': [{ projectId: 'p1', projectName: 'CC-001 Rev. 3', isArchived: false, create: true, update: false, delete: false }],
+    });
+    render(<App />);
+    const { access } = await open(user);
+
+    expect(within(access).getByRole('checkbox', { name: 'Asignar «CC-001 Rev. 3»' })).toBeChecked();
+    expect(within(access).getByRole('checkbox', { name: 'Ver «CC-001 Rev. 3»' })).toBeChecked();
+    expect(within(access).getByRole('checkbox', { name: 'Ver «CC-001 Rev. 3»' })).toBeDisabled();
+    expect(within(access).getByRole('checkbox', { name: 'Crear en «CC-001 Rev. 3»' })).toBeChecked();
+    expect(within(access).getByRole('checkbox', { name: 'Modificar en «CC-001 Rev. 3»' })).not.toBeChecked();
+    // El proyecto sin asignar no ofrece permisos hasta que se asigna
+    expect(within(access).getByRole('checkbox', { name: 'Asignar «Otro proyecto»' })).not.toBeChecked();
+    expect(within(access).getByRole('checkbox', { name: 'Crear en «Otro proyecto»' })).toBeDisabled();
+  });
+
+  it('asigna un proyecto con permisos distintos y envía la lista completa al guardar', async () => {
+    const user = userEvent.setup();
+    const api = admin('#/admin/users', {
+      'GET /projects': TWO_PROJECTS,
+      'GET /users/u-ed/projects': [{ projectId: 'p1', projectName: 'CC-001 Rev. 3', isArchived: false, create: false, update: false, delete: false }],
+      'PATCH /users/u-ed': USERS[1],
+    });
+    render(<App />);
+    const { dialog, access } = await open(user);
+
+    await user.click(within(access).getByRole('checkbox', { name: 'Modificar en «CC-001 Rev. 3»' }));
+    await user.click(within(access).getByRole('checkbox', { name: 'Asignar «Otro proyecto»' }));
+    await user.click(within(access).getByRole('checkbox', { name: 'Crear en «Otro proyecto»' }));
+    await user.click(within(access).getByRole('checkbox', { name: 'Eliminar en «Otro proyecto»' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar cambios' }));
+
+    await waitFor(() => expect(api.called('PUT /users/u-ed/projects')).toHaveLength(1));
+    expect(api.called('PUT /users/u-ed/projects')[0].body).toEqual({
+      assignments: [
+        { projectId: 'p1', create: false, update: true, delete: false },
+        { projectId: 'p3', create: true, update: false, delete: true },
+      ],
+    });
+  });
+
+  it('desasignar un proyecto le quita los permisos y lo saca de la lista enviada', async () => {
+    const user = userEvent.setup();
+    const api = admin('#/admin/users', {
+      'GET /users/u-ed/projects': [{ projectId: 'p1', projectName: 'CC-001 Rev. 3', isArchived: false, create: true, update: true, delete: true }],
+      'PATCH /users/u-ed': USERS[1],
+    });
+    render(<App />);
+    const { dialog, access } = await open(user);
+    await user.click(within(access).getByRole('checkbox', { name: 'Asignar «CC-001 Rev. 3»' }));
+    expect(within(access).getByRole('checkbox', { name: 'Crear en «CC-001 Rev. 3»' })).toBeDisabled();
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar cambios' }));
+    await waitFor(() => expect(api.called('PUT /users/u-ed/projects')[0]?.body).toEqual({ assignments: [] }));
+  });
+
+  it('a un administrador no se le asignan proyectos: ve todos', async () => {
+    const user = userEvent.setup();
+    const api = admin('#/admin/users', { 'PATCH /users/u-admin': USERS[0] });
+    render(<App />);
+    await screen.findByText('Eva Editora');
+    await user.click(screen.getByRole('button', { name: 'Editar a Ana Admin' }));
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveTextContent('todos los proyectos');
+    expect(within(dialog).queryByRole('group', { name: 'Acceso a proyectos' })).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar cambios' }));
+    await waitFor(() => expect(api.called('PATCH /users/u-admin')).toHaveLength(1));
+    expect(api.calls.some((call) => call.key.startsWith('PUT /users/u-admin/projects'))).toBe(false);
+  });
+
+  it('muestra el error de la API sin cerrar la ventana', async () => {
+    const user = userEvent.setup();
+    admin('#/admin/users', { 'PATCH /users/u-ed': USERS[1], 'PUT /users/u-ed/projects': { status: 400, data: { message: 'An archived project cannot be assigned. Reactivate it first.' } } });
+    render(<App />);
+    const { dialog } = await open(user);
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar cambios' }));
+    expect(await within(dialog).findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('avisa de los proyectos archivados que tiene asignados y que se conservan', async () => {
+    const user = userEvent.setup();
+    admin('#/admin/users', { 'GET /users/u-ed/projects': [{ projectId: 'p2', projectName: 'Proyecto viejo', isArchived: true, create: true, update: true, delete: false }] });
+    render(<App />);
+    const { access } = await open(user);
+    expect(access).toHaveTextContent('1 proyecto archivado asignado (Proyecto viejo)');
+  });
+
+  it('sin proyectos activos lo dice en lugar de mostrar una tabla vacía', async () => {
+    const user = userEvent.setup();
+    admin('#/admin/users', { 'GET /projects': [] });
+    render(<App />);
+    const { access } = await open(user);
+    expect(access).toHaveTextContent('Todavía no hay proyectos activos que asignar.');
+    expect(within(access).queryByRole('table')).not.toBeInTheDocument();
+  });
+});
+
 describe('roles', () => {
   it('el rol protegido no se puede editar ni eliminar', async () => {
     admin('#/admin/roles');
@@ -113,7 +224,7 @@ describe('roles', () => {
     expect(screen.getByRole('button', { name: 'Editar el rol Editor' })).toBeInTheDocument();
   });
 
-  it('crea un rol con las acciones elegidas', async () => {
+  it('crea un rol solo con nombre y descripción (los permisos van por proyecto)', async () => {
     const user = userEvent.setup();
     const api = admin('#/admin/roles', { 'POST /roles': { id: 'nuevo' } });
     render(<App />);
@@ -121,10 +232,11 @@ describe('roles', () => {
     await user.click(screen.getByRole('button', { name: /Nuevo rol/ }));
     const dialog = screen.getByRole('dialog', { name: 'Nuevo rol' });
     await user.type(within(dialog).getByLabelText('Nombre del rol'), 'Analista');
-    await user.click(within(dialog).getByRole('checkbox', { name: /Modificar/ }));
+    expect(within(dialog).queryByRole('checkbox')).not.toBeInTheDocument(); // el rol ya no da permisos
+    expect(dialog).toHaveTextContent('eso se asigna a cada usuario, proyecto por proyecto');
     await user.click(within(dialog).getByRole('button', { name: 'Guardar rol' }));
     await waitFor(() => expect(api.called('POST /roles')).toHaveLength(1));
-    expect(api.called('POST /roles')[0].body).toEqual({ name: 'Analista', description: '', permissions: ['read', 'update'] });
+    expect(api.called('POST /roles')[0].body).toEqual({ name: 'Analista', description: '' });
   });
 
   it('explica en español por qué no se puede eliminar un rol con usuarios', async () => {

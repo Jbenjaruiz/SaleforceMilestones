@@ -1,6 +1,7 @@
 import { Milestone } from '../milestones/milestone.entity';
 import { Project } from '../projects/project.entity';
 import { Task } from '../tasks/task.entity';
+import type { ProjectPermissions } from './core-access.service';
 import { MilestoneSummary, summarizeMilestone, TaskStatus, taskDelayDays, taskStatus } from './metrics';
 
 export interface TaskView {
@@ -33,6 +34,8 @@ export interface ProjectView {
   description: string | null;
   isArchived: boolean;
   createdAt: Date;
+  /** What the requesting user may do in this project (administrators: everything). */
+  permissions: ProjectPermissions;
 }
 
 export const toTaskView = (task: Task, today: string): TaskView => ({
@@ -67,10 +70,11 @@ export function toMilestoneView(milestone: Milestone, today: string): MilestoneV
   };
 }
 
-export const toProjectView = (project: Project): ProjectView => ({
+export const toProjectView = (project: Project, permissions: ProjectPermissions): ProjectView => ({
   id: project.id,
   name: project.name,
   description: project.description,
   isArchived: project.isArchived,
   createdAt: project.createdAt,
+  permissions,
 });

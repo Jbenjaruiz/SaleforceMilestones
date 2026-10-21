@@ -18,7 +18,7 @@ scripts/    generador de la plantilla de importación
 - **Hitos** (un control de cambio cada uno, con su código `CC-…`) y **tareas** con fecha de inicio y fecha estimada. El botón de check finaliza la tarea y fija su fecha real.
 - El hito no guarda fechas ni estado: su avance, fechas, estado y retraso se **derivan de sus tareas**. El retraso global es la suma de los días de retraso de todas las tareas.
 - **Comentarios** en hitos y tareas, y **adjuntos** (PNG, JPG, WebP y PDF, hasta 5 MB y 5 por tarea o comentario).
-- **Permisos** simples por rol: Ver, Crear, Modificar y Eliminar. El rol Administrator puede todo.
+- **Permisos por proyecto:** un administrador asigna proyectos a cada usuario (**Usuarios → Editar**) con los permisos Ver, Crear, Modificar y Eliminar sobre el contenido de cada uno. Sin proyectos asignados, el usuario no ve ninguno. El rol Administrator ve y puede todo.
 - **Importación** de un Excel (una fila por tarea) a un proyecto existente: todo o nada, con el detalle de cada problema.
 - **Auditoría** de quién hizo cada cambio.
 
@@ -88,7 +88,7 @@ Para generar un `JWT_SECRET`: `node -e "console.log(require('crypto').randomByte
 
 ### 5. Crear el esquema y los datos iniciales
 
-**Esquema** (omítalo si ya existe, opción A del paso 3):
+**Esquema** (omítalo si ya existe, opción A del paso 3). Hay **dos** partes: el esquema inicial y la tabla `project_members` de la asignación de proyectos (F02, script en [`docs/requerimientos/F02-asignacion-de-proyectos.md`](docs/requerimientos/F02-asignacion-de-proyectos.md)). Sin ella, los usuarios que no son administradores no ven proyectos y la edición de usuarios falla.
 
 - *Opción 1, con migraciones* (el usuario de la base necesita permisos de DDL): `npm run migration:run -w @seguimiento/api`
   Aviso: la migración se validó con el analizador de SQL Server 2012 y la herramienta se comprobó hasta el punto de conectarse, pero **aún no se ha ejecutado de verdad contra una base** (el usuario de pruebas no tiene DDL; el esquema real se creó con el script SQL). Si falla, use la opción 2 y avise.
@@ -118,7 +118,7 @@ npm run dev          # API en http://localhost:3000/api  y  frontend en http://l
 1. **Proyectos → Nuevo proyecto** (p. ej. «CC-001 Rev. 3 (8 oct 2026)»).
 2. **Importar** en ese proyecto: elija [`docs/importacion/plantilla-importacion-CC-001-Rev3.xlsx`](docs/importacion/plantilla-importacion-CC-001-Rev3.xlsx) → **Validar archivo** → **Importar**. Carga 11 hitos y 28 tareas. Las fechas son **de prueba**.
 3. Vuelva al **Tablero**: verá los indicadores, los hitos y sus tareas. Pruebe el botón de check, los comentarios y los adjuntos.
-4. **Usuarios** y **Roles** (menú superior, solo administradores): cree un usuario con el rol *Reviewer* y entre con él para ver la vista de solo lectura.
+4. **Usuarios** y **Roles** (menú superior, solo administradores): cree un usuario con el rol *Reviewer*, en **Usuarios → Editar** asígnele el proyecto con los permisos que quiera (solo *Ver* para solo lectura) y entre con él.
 
 ### Comandos útiles
 

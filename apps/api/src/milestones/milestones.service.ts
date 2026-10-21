@@ -23,12 +23,12 @@ export class MilestonesService {
   ) {}
 
   async get(id: string, actor: AuthenticatedUser): Promise<MilestoneView> {
-    await this.access.milestone(id, actor);
+    await this.access.milestone(id, actor, 'read');
     return this.view(id);
   }
 
   async create(projectId: string, dto: CreateMilestoneDto, actor: AuthenticatedUser): Promise<MilestoneView> {
-    await this.access.project(projectId, actor, true);
+    await this.access.project(projectId, actor, 'create');
     const code = dto.code.toUpperCase();
     await this.assertCodeFree(projectId, code);
 
@@ -50,7 +50,7 @@ export class MilestonesService {
   }
 
   async update(id: string, dto: UpdateMilestoneDto, actor: AuthenticatedUser): Promise<MilestoneView> {
-    const milestone = await this.access.milestone(id, actor, true);
+    const milestone = await this.access.milestone(id, actor, 'update');
     const code = dto.code?.toUpperCase();
     if (code && code !== milestone.code) await this.assertCodeFree(milestone.projectId, code, id);
 
@@ -77,7 +77,7 @@ export class MilestonesService {
 
   /** Deletes the milestone with its tasks, comments and attachments. */
   async remove(id: string, actor: AuthenticatedUser): Promise<void> {
-    const milestone = await this.access.milestone(id, actor, true);
+    const milestone = await this.access.milestone(id, actor, 'delete');
     const report = await this.dataSource.transaction(async (manager) => {
       const report = await deleteMilestone(manager, id);
       await this.audit.record(

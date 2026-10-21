@@ -54,6 +54,8 @@ Es viable y adecuado para un proyecto pequeño: un solo repositorio, un solo his
 - **Usuario inicial (administrador):** lo crea el equipo de desarrollo mediante una carga inicial (*seed*) de la base. Su correo y contraseña se leen de variables de entorno y no se guardan en el repositorio.
 
 ### 4.2 Roles y permisos (simple)
+
+> **Reemplazado por [F02](F02-asignacion-de-proyectos.md):** los permisos Ver/Crear/Modificar/Eliminar ya **no los da el rol** sino la **asignación de cada proyecto a cada usuario**. El rol solo distingue al Administrator (que ve y puede todo) de los demás. Lo que sigue describe el diseño original de F01.
 - Un rol agrupa **varios permisos**; relación uno a muchos, tal como se indicó.
 - El administrador crea roles y asigna permisos desde la interfaz.
 - Los permisos son **básicos, cuatro acciones**: `read` (ver), `create` (crear), `update` (modificar) y `delete` (eliminar).

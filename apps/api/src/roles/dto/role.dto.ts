@@ -12,10 +12,12 @@ export class CreateRoleDto {
   @MaxLength(255)
   description?: string;
 
+  /** No longer used for access (permissions are assigned per project); kept optional for compatibility. */
+  @IsOptional()
   @IsArray()
   @ArrayUnique()
   @IsIn(PERMISSION_CODES, { each: true })
-  permissions: PermissionCode[];
+  permissions?: PermissionCode[];
 }
 
 export class UpdateRoleDto {

@@ -2,14 +2,14 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App.jsx';
-import { ADMIN, dashboard, EDITOR, mockApi, REVIEWER, signedInAs } from './test/mockApi.js';
+import { ADMIN, dashboard, EDITOR, mockApi, permissionsFor, REVIEWER, signedInAs } from './test/mockApi.js';
 
 const PROJECTS = [{ id: 'p1', name: 'CC-001 Rev. 3', description: null, isArchived: false, createdAt: '2026-10-01T00:00:00Z' }, { id: 'p2', name: 'Otro proyecto', description: null, isArchived: false, createdAt: '2026-10-02T00:00:00Z' }];
 
 beforeEach(() => { window.location.hash = '#/'; localStorage.clear(); });
 afterEach(() => vi.unstubAllGlobals());
 
-const board = (user, extra = {}) => mockApi({ ...signedInAs(user), 'GET /projects': PROJECTS, 'GET /projects/p1/dashboard': dashboard(), ...extra });
+const board = (user, extra = {}) => mockApi({ ...signedInAs(user), 'GET /projects': PROJECTS, 'GET /projects/p1/dashboard': dashboard({ permissions: permissionsFor(user) }), ...extra });
 const inTable = () => within(screen.getByRole('table'));
 const rowOf = (code) => inTable().getByText(code).closest('tr');
 
@@ -163,6 +163,14 @@ describe('tablero', () => {
     render(<App />);
     expect(await screen.findByText('Todavía no hay proyectos disponibles.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Cree el primer proyecto' })).toBeInTheDocument();
+  });
+
+  it('un usuario sin proyectos asignados lo ve y sabe a quién pedirlos', async () => {
+    board(REVIEWER, { 'GET /projects': [] });
+    render(<App />);
+    expect(await screen.findByText('No tiene proyectos asignados.')).toBeInTheDocument();
+    expect(screen.getByText(/Solicite a un administrador/)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Cree el primer proyecto' })).not.toBeInTheDocument();
   });
 
   it('muestra un error comprensible cuando falla la carga y permite reintentar', async () => {

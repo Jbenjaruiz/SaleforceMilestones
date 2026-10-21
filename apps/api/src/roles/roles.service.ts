@@ -54,9 +54,10 @@ export class RolesService {
       const role = await manager.getRepository(Role).save(
         manager.getRepository(Role).create({ name, description: dto.description?.trim() || null, isProtected: false }),
       );
-      await manager.getRepository(Permission).insert(dto.permissions.map((code) => ({ roleId: role.id, code })));
+      const permissions = dto.permissions ?? [];
+      if (permissions.length > 0) await manager.getRepository(Permission).insert(permissions.map((code) => ({ roleId: role.id, code })));
       await this.audit.record(
-        { userId: actor.id, entity: 'role', entityId: role.id, action: 'create', changes: { name, permissions: dto.permissions } },
+        { userId: actor.id, entity: 'role', entityId: role.id, action: 'create', changes: { name } },
         manager,
       );
       return role;

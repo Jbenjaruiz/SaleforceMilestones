@@ -21,7 +21,7 @@ const fetchProjects = () => api.get('/projects');
 const fetchDashboard = (projectId) => api.get(`/projects/${projectId}/dashboard`);
 
 export default function DashboardPage() {
-  const { can, user } = useAuth();
+  const { user } = useAuth();
   const projects = useResource(fetchProjects, 'projects');
   const [selected, setSelected] = useState(readStoredProject);
   const [filters, setFilters] = useState({ status: 'all', delay: 'all' });
@@ -38,6 +38,8 @@ export default function DashboardPage() {
 
   const dashboard = useResource(fetchDashboard, projectId);
   const data = dashboard.data;
+  // Lo que el usuario puede hacer lo decide la asignación de este proyecto (el administrador puede todo).
+  const perms = data?.permissions ?? {};
   const visible = useMemo(() => (data ? filterMilestones(data.milestones, filters) : []), [data, filters]);
   const closeModal = useCallback(() => setModal(null), []);
 
@@ -64,17 +66,17 @@ export default function DashboardPage() {
 
   const actions = {
     onOpenMilestoneActivity: (milestone) => setModal({ type: 'activity', target: { type: 'milestone', id: milestone.id, title: `${milestone.code} · ${milestone.name}` } }),
-    ...(can('create') && { onAddTask: (milestone) => setModal({ type: 'task', milestone }) }),
-    ...(can('update') && { onEditMilestone: (milestone) => setModal({ type: 'milestone', milestone }) }),
-    ...(can('delete') && { onDeleteMilestone: (milestone) => setModal({ type: 'delete-milestone', milestone }) }),
+    ...(perms.create && { onAddTask: (milestone) => setModal({ type: 'task', milestone }) }),
+    ...(perms.update && { onEditMilestone: (milestone) => setModal({ type: 'milestone', milestone }) }),
+    ...(perms.delete && { onDeleteMilestone: (milestone) => setModal({ type: 'delete-milestone', milestone }) }),
     task: {
       busyTaskId,
       onOpenActivity: (task) => setModal({ type: 'activity', target: { type: 'task', id: task.id, title: task.name } }),
-      ...(can('update') && {
+      ...(perms.update && {
         onToggle: toggleTask,
         onEdit: (task) => setModal({ type: 'task', task, milestone: data.milestones.find((m) => m.id === task.milestoneId) }),
       }),
-      ...(can('delete') && { onDelete: (task) => setModal({ type: 'delete-task', task }) }),
+      ...(perms.delete && { onDelete: (task) => setModal({ type: 'delete-task', task }) }),
     },
   };
 
@@ -85,8 +87,9 @@ export default function DashboardPage() {
     return (
       <main className="container main">
         <EmptyState>
-          <p>Todavía no hay proyectos disponibles.</p>
-          {user.isAdmin && <p><Link to="/admin/projects">Cree el primer proyecto</Link> para empezar.</p>}
+          {user.isAdmin
+            ? <><p>Todavía no hay proyectos disponibles.</p><p><Link to="/admin/projects">Cree el primer proyecto</Link> para empezar.</p></>
+            : <><p>No tiene proyectos asignados.</p><p>Solicite a un administrador que le asigne los proyectos en los que debe trabajar.</p></>}
         </EmptyState>
       </main>
     );
@@ -126,7 +129,7 @@ export default function DashboardPage() {
               </div>
               <div className="section-head__end">
                 <Filters filters={filters} onChange={setFilters} />
-                {can('create') && <button type="button" className="button" onClick={() => setModal({ type: 'milestone' })}><Icon name="plus" />Nuevo hito</button>}
+                {perms.create && <button type="button" className="button" onClick={() => setModal({ type: 'milestone' })}><Icon name="plus" />Nuevo hito</button>}
               </div>
             </div>
             <MilestoneTable rows={visible} total={data.milestones.length} actions={actions} />
@@ -149,7 +152,7 @@ export default function DashboardPage() {
           onSave={(values) => mutate(() => (modal.task ? api.patch(`/tasks/${modal.task.id}`, values) : api.post(`/milestones/${modal.milestone.id}/tasks`, values)))}
         />
       )}
-      {modal?.type === 'activity' && <ActivityModal target={modal.target} onClose={closeModal} />}
+      {modal?.type === 'activity' && <ActivityModal target={modal.target} permissions={perms} onClose={closeModal} />}
       {modal?.type === 'delete-milestone' && (
         <ConfirmDialog title="Eliminar hito" confirmLabel="Eliminar hito" onClose={closeModal} onConfirm={() => mutate(() => api.delete(`/milestones/${modal.milestone.id}`))}>
           <p>Se eliminará el hito <strong>{modal.milestone.code}</strong> junto con sus <strong>{modal.milestone.taskCount} tareas</strong>, sus comentarios y adjuntos. Esta acción no se puede deshacer.</p>

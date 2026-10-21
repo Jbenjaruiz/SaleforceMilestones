@@ -4,6 +4,14 @@ export const ADMIN = { id: 'u-admin', email: 'admin@example.com', fullName: 'Ana
 export const EDITOR = { id: 'u-ed', email: 'ed@example.com', fullName: 'Eva Editora', roleId: 'r2', roleName: 'Editor', isAdmin: false, permissions: ['read', 'create', 'update'] };
 export const REVIEWER = { id: 'u-rev', email: 'rev@example.com', fullName: 'Rafa Revisor', roleId: 'r3', roleName: 'Reviewer', isAdmin: false, permissions: ['read'] };
 
+/** Lo que cada usuario de prueba puede hacer en el proyecto: lo decide la asignación, no el rol. */
+export const PERMISSIONS = {
+  all: { read: true, create: true, update: true, delete: true },
+  editor: { read: true, create: true, update: true, delete: false },
+  readOnly: { read: true, create: false, update: false, delete: false },
+};
+export const permissionsFor = (user) => (user.isAdmin ? PERMISSIONS.all : user.id === EDITOR.id ? PERMISSIONS.editor : PERMISSIONS.readOnly);
+
 export const task = (overrides = {}) => ({
   id: 't1', milestoneId: 'm1', name: 'Definir regla de precios', responsible: 'Inforum', startDate: '2026-10-12', estimatedDate: '2026-10-16',
   actualDate: null, isCompleted: false, status: 'in_progress', delayDays: 3, sortOrder: 1, ...overrides,
@@ -18,6 +26,7 @@ export const milestone = (overrides = {}) => ({
 });
 
 export const dashboard = (overrides = {}) => ({
+  permissions: PERMISSIONS.all,
   project: { id: 'p1', name: 'CC-001 Rev. 3', description: 'Cambios de la revisión 3', isArchived: false, createdAt: '2026-10-01T00:00:00Z' },
   today: '2026-10-19',
   summary: { milestoneCount: 3, finishedMilestones: 1, taskCount: 4, completedTasks: 2, overallProgress: 75, milestonesWithProgress: 2, delayDays: 3, delayedTaskCount: 1 },

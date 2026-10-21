@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Header, HttpCode, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthenticatedUser } from '../auth/authenticated-user';
-import { CurrentUser, RequirePermission } from '../auth/decorators';
+import { CurrentUser } from '../auth/decorators';
 import { ParseGuidPipe } from '../common/guid';
 import { AttachmentsService } from './attachments.service';
 import { ATTACHMENT_MAX_BYTES, ATTACHMENTS_PER_PARENT } from './file-rules';
@@ -13,14 +13,12 @@ export const uploadOptions = { limits: { fileSize: ATTACHMENT_MAX_BYTES, files: 
 export class AttachmentsController {
   constructor(private readonly attachments: AttachmentsService) {}
 
-  @RequirePermission('read')
   @Get('tasks/:id/attachments')
   list(@Param('id', ParseGuidPipe) id: string, @CurrentUser() actor: AuthenticatedUser) {
     return this.attachments.listForTask(id, actor);
   }
 
   /** multipart/form-data with up to 5 files in the `files` field. */
-  @RequirePermission('update')
   @Post('tasks/:id/attachments')
   @UseInterceptors(FilesInterceptor('files', ATTACHMENTS_PER_PARENT, uploadOptions))
   upload(@Param('id', ParseGuidPipe) id: string, @UploadedFiles() files: Express.Multer.File[], @CurrentUser() actor: AuthenticatedUser) {
@@ -28,7 +26,6 @@ export class AttachmentsController {
   }
 
   // The bytes are only sent with a valid session, and the browser may not guess another type or run them.
-  @RequirePermission('read')
   @Get('attachments/:id/download')
   @Header('X-Content-Type-Options', 'nosniff')
   @Header('Content-Security-Policy', "default-src 'none'; sandbox")
@@ -37,7 +34,7 @@ export class AttachmentsController {
     return this.attachments.download(id, actor);
   }
 
-  // No @RequirePermission: the service allows only the uploader or an administrator.
+  // The service allows only whoever uploaded it or an administrator.
   @HttpCode(204)
   @Delete('attachments/:id')
   remove(@Param('id', ParseGuidPipe) id: string, @CurrentUser() actor: AuthenticatedUser) {

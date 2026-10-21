@@ -235,14 +235,14 @@ function TaskAttachments({ taskId, canUpload }) {
 }
 
 /** Ventana de comentarios (hitos y tareas) y, en las tareas, de adjuntos directos. */
-export default function ActivityModal({ target, onClose }) {
-  const { can } = useAuth();
+/** `permissions` son los del usuario en el proyecto: comentar requiere Crear y adjuntar a la tarea requiere Modificar. */
+export default function ActivityModal({ target, permissions, onClose }) {
   const isTask = target.type === 'task';
   return (
     <Modal title={isTask ? `Tarea: ${target.title}` : `Hito ${target.title}`} onClose={onClose} wide>
       <div className="activity">
-        {isTask && <TaskAttachments taskId={target.id} canUpload={can('update')} />}
-        <Comments base={`/${isTask ? 'tasks' : 'milestones'}/${target.id}`} canComment={can('create')} />
+        {isTask && <TaskAttachments taskId={target.id} canUpload={permissions.update} />}
+        <Comments base={`/${isTask ? 'tasks' : 'milestones'}/${target.id}`} canComment={permissions.create} />
       </div>
     </Modal>
   );

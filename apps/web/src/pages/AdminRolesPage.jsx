@@ -6,22 +6,10 @@ import Modal from '../components/Modal.jsx';
 import { EmptyState, ErrorState, LoadingState } from '../components/States.jsx';
 import { useResource } from '../hooks/useResource.js';
 
-const PERMISSIONS = [
-  { code: 'read', label: 'Ver', hint: 'Consultar proyectos, hitos, tareas, comentarios y adjuntos.' },
-  { code: 'create', label: 'Crear', hint: 'Crear hitos, tareas, comentarios y adjuntos.' },
-  { code: 'update', label: 'Modificar', hint: 'Editar hitos y tareas, marcar tareas y adjuntar archivos a tareas.' },
-  { code: 'delete', label: 'Eliminar', hint: 'Eliminar hitos y tareas (con sus comentarios y adjuntos).' },
-];
-const LABEL = Object.fromEntries(PERMISSIONS.map((permission) => [permission.code, permission.label]));
-
 function RoleForm({ role, onSaved, onClose }) {
-  const [values, setValues] = useState({ name: role?.name ?? '', description: role?.description ?? '', permissions: role?.permissions ?? ['read'] });
-  const toggle = (code) => setValues((current) => ({
-    ...current,
-    permissions: current.permissions.includes(code) ? current.permissions.filter((item) => item !== code) : [...current.permissions, code],
-  }));
+  const [values, setValues] = useState({ name: role?.name ?? '', description: role?.description ?? '' });
   const { busy, error, submit } = useSubmit(async () => {
-    const body = { name: values.name.trim(), description: values.description.trim(), permissions: values.permissions };
+    const body = { name: values.name.trim(), description: values.description.trim() };
     await (role ? api.patch(`/roles/${role.id}`, body) : api.post('/roles', body));
     await onSaved();
     onClose();
@@ -32,16 +20,7 @@ function RoleForm({ role, onSaved, onClose }) {
       <form className="form" onSubmit={submit}>
         <Field label="Nombre del rol"><input value={values.name} onChange={(e) => setValues({ ...values, name: e.target.value })} required maxLength={100} /></Field>
         <Field label="Descripción (opcional)"><input value={values.description} onChange={(e) => setValues({ ...values, description: e.target.value })} maxLength={255} /></Field>
-        <fieldset className="permissions">
-          <legend>Permisos</legend>
-          {PERMISSIONS.map((permission) => (
-            <label className="check-row" key={permission.code}>
-              <input type="checkbox" checked={values.permissions.includes(permission.code)} onChange={() => toggle(permission.code)} />
-              <span><strong>{permission.label}</strong> <small className="muted">{permission.hint}</small></span>
-            </label>
-          ))}
-        </fieldset>
-        <p className="muted"><small>Las acciones valen para todo el sistema. Gestionar usuarios, roles, proyectos e importaciones es solo del rol Administrator.</small></p>
+        <p className="muted"><small>El rol no da permisos sobre los proyectos: eso se asigna a cada usuario, proyecto por proyecto, en la pantalla de Usuarios.</small></p>
         <FormError message={error} />
         <FormActions busy={busy} submitLabel="Guardar rol" onCancel={onClose} />
       </form>
@@ -61,8 +40,8 @@ export default function AdminRolesPage() {
     <main className="container main">
       <div className="section-head">
         <div>
-          <h2>Roles y permisos</h2>
-          <p>Cada rol agrupa las acciones Ver, Crear, Modificar y Eliminar. Un usuario tiene un solo rol.</p>
+          <h2>Roles</h2>
+          <p>El rol <strong>Administrator</strong> ve y puede todo. Los demás roles solo clasifican a los usuarios: lo que cada uno puede hacer se asigna proyecto por proyecto en <strong>Usuarios → Editar</strong>.</p>
         </div>
         <button type="button" className="button" onClick={() => setModal({ type: 'form' })}><Icon name="plus" />Nuevo rol</button>
       </div>
@@ -70,17 +49,14 @@ export default function AdminRolesPage() {
       <div className="card">
         <div className="table-scroll">
           <table className="table">
-            <caption className="sr-only">Roles y sus permisos</caption>
-            <thead><tr><th scope="col">Rol</th><th scope="col">Permisos</th><th scope="col">Usuarios</th><th scope="col"><span className="sr-only">Acciones</span></th></tr></thead>
+            <caption className="sr-only">Roles</caption>
+            <thead><tr><th scope="col">Rol</th><th scope="col">Usuarios</th><th scope="col"><span className="sr-only">Acciones</span></th></tr></thead>
             <tbody>
               {roles.data.map((role) => (
                 <tr key={role.id}>
                   <td data-label="Rol" className="cell-name">
                     <strong>{role.name}</strong> {role.isProtected && <span className="badge badge--active">Protegido</span>}
                     {role.description && <span className="cell-desc">{role.description}</span>}
-                  </td>
-                  <td data-label="Permisos">
-                    {role.isProtected ? <span className="muted">Todos (siempre)</span> : (role.permissions.length === 0 ? <span className="muted">Ninguno</span> : role.permissions.map((code) => <span className="tag tag--cc" key={code}>{LABEL[code]}</span>))}
                   </td>
                   <td data-label="Usuarios">{role.userCount}</td>
                   <td data-label="Acciones" className="cell-action">

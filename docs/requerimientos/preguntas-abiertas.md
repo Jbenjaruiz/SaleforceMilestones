@@ -36,6 +36,7 @@ Cada punto afecta al diseño; hasta resolverlo, el documento de la feature lo tr
 | 23 | Tareas con varios códigos | Una tarea pertenece a un solo hito; del Excel se toma **solo el primer código** de la celda. |
 | 24 | Idioma | Código fuente, API y base de datos en inglés; interfaz y docs en español. |
 | 25 | Fechas | De calendario, sin hora ni zona horaria. |
+| 37 | Permisos por proyecto (F02) | Un administrador asigna proyectos a cada usuario desde **Usuarios → Editar**, con permisos Ver (implícito), Crear, Modificar y Eliminar **sobre el contenido** de cada proyecto. **La asignación manda**: los permisos del rol dejan de usarse. Sin proyectos asignados el usuario no ve ninguno. Crear/renombrar/archivar proyectos e importar siguen siendo solo del administrador. Ver [F02](F02-asignacion-de-proyectos.md) |
 | 29 | Hito | Sin check propio: su porcentaje de avance y su finalización dependen de sus tareas. Su retraso es la suma de los días de retraso de sus tareas atrasadas. El retraso global es la suma de todas las tareas. |
 | 30 | Datos del CC en el hito | Solo nombre y descripción (además del código). Sin horas ni etapa. |
 | 31 | Origen de las tareas | Pueden surgir de los hallazgos o de los requerimientos del CC. |

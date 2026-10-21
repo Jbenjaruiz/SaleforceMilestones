@@ -37,8 +37,6 @@ export function AuthProvider({ children }) {
     ...state,
     login,
     logout,
-    /** El Administrador siempre puede; el resto según los permisos de su rol. */
-    can: (permission) => Boolean(state.user && (state.user.isAdmin || state.user.permissions.includes(permission))),
   }), [state, login, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

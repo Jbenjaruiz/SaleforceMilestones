@@ -36,7 +36,7 @@ export class ImportsService {
    * With `dryRun` the file is only checked.
    */
   async importInto(projectId: string, file: Express.Multer.File | undefined, dryRun: boolean, actor: AuthenticatedUser): Promise<ImportReport> {
-    const project = await this.access.project(projectId, actor, true);
+    const project = await this.access.project(projectId, actor, 'create');
     if (!file) throw new BadRequestException('Attach the Excel file in the "file" field.');
     if (file.size > IMPORT_MAX_BYTES) throw new PayloadTooLargeException('The file can be at most 5 MB.');
     if (!(file.buffer.length > 4 && file.buffer.subarray(0, 2).toString('latin1') === 'PK')) {

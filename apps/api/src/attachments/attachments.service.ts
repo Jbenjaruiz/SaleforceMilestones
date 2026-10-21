@@ -122,13 +122,13 @@ export class AttachmentsService {
   // ── Attachments directly on a task ───────────────────────────────────────────────────
 
   async listForTask(taskId: string, actor: AuthenticatedUser): Promise<AttachmentView[]> {
-    await this.access.task(taskId, actor);
+    await this.access.task(taskId, actor, 'read');
     const rows = await this.attachments.find({ where: { taskId }, relations: { uploadedByUser: true }, order: { createdAt: 'ASC' } });
     return rows.map(toAttachmentView);
   }
 
   async uploadToTask(taskId: string, files: Express.Multer.File[] | undefined, actor: AuthenticatedUser): Promise<AttachmentView[]> {
-    await this.access.task(taskId, actor, true);
+    await this.access.task(taskId, actor, 'update');
     const prepared = this.prepare(files, await this.attachments.count({ where: { taskId } }));
     if (prepared.length === 0) throw new BadRequestException('Attach at least one file in the "files" field.');
 
@@ -189,7 +189,7 @@ export class AttachmentsService {
   }
 
   private async assertVisible(attachment: Attachment, actor: AuthenticatedUser, write: boolean): Promise<void> {
-    if (attachment.taskId) await this.access.task(attachment.taskId, actor, write);
-    else await this.access.comment(attachment.commentId as string, actor, write);
+    if (attachment.taskId) await this.access.task(attachment.taskId, actor, 'read', write);
+    else await this.access.comment(attachment.commentId as string, actor, 'read', write);
   }
 }

@@ -23,12 +23,12 @@ export class TasksService {
   ) {}
 
   async get(id: string, actor: AuthenticatedUser): Promise<TaskView> {
-    await this.access.task(id, actor);
+    await this.access.task(id, actor, 'read');
     return this.view(id);
   }
 
   async create(milestoneId: string, dto: CreateTaskDto, actor: AuthenticatedUser): Promise<TaskView> {
-    await this.access.milestone(milestoneId, actor, true);
+    await this.access.milestone(milestoneId, actor, 'create');
     this.assertDateOrder(dto.startDate, dto.estimatedDate);
 
     const { max } = (await this.tasks
@@ -62,7 +62,7 @@ export class TasksService {
   }
 
   async update(id: string, dto: UpdateTaskDto, actor: AuthenticatedUser): Promise<TaskView> {
-    const task = await this.access.task(id, actor, true);
+    const task = await this.access.task(id, actor, 'update');
     this.assertDateOrder(dto.startDate ?? task.startDate, dto.estimatedDate ?? task.estimatedDate);
 
     const before: Record<string, unknown> = {};
@@ -92,7 +92,7 @@ export class TasksService {
    * new date; unchecking clears it. The date is never edited by hand. Repeating the current state does nothing.
    */
   async setCompletion(id: string, completed: boolean, actor: AuthenticatedUser): Promise<TaskView> {
-    const task = await this.access.task(id, actor, true);
+    const task = await this.access.task(id, actor, 'update');
     if (task.isCompleted === completed) return this.view(id);
 
     const actualDate = completed ? this.clock.today() : null;
@@ -107,7 +107,7 @@ export class TasksService {
   }
 
   async remove(id: string, actor: AuthenticatedUser): Promise<void> {
-    const task = await this.access.task(id, actor, true);
+    const task = await this.access.task(id, actor, 'delete');
     const report = await this.dataSource.transaction(async (manager) => {
       const report = await deleteTasks(manager, [id]);
       await this.audit.record(

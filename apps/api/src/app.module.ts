@@ -13,6 +13,7 @@ import { CoreModule } from './core/core.module';
 import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports/imports.module';
 import { MilestonesModule } from './milestones/milestones.module';
+import { ProjectMembersModule } from './project-members/project-members.module';
 import { ProjectsModule } from './projects/projects.module';
 import { RolesModule } from './roles/roles.module';
 import { TasksModule } from './tasks/tasks.module';
@@ -36,6 +37,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     RolesModule,
     ProjectsModule,
+    ProjectMembersModule,
     MilestonesModule,
     TasksModule,
     CommentsModule,

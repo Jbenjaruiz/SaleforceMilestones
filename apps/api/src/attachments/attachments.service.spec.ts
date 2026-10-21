@@ -73,7 +73,7 @@ describe('AttachmentsService.remove', () => {
   it('checks access through the comment when the file belongs to a comment', async () => {
     const { service, access } = setup({ id: 'a2', uploadedBy: 'uploader', taskId: null, commentId: 'c1', fileName: 'x.pdf', storageKey: 'k' } as never);
     await service.remove('a2', user('uploader'));
-    expect(access.comment).toHaveBeenCalledWith('c1', expect.anything(), true);
+    expect(access.comment).toHaveBeenCalledWith('c1', expect.anything(), 'read', true);
     expect(access.task).not.toHaveBeenCalled();
   });
 });

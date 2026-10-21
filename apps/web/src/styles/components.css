@@ -278,3 +278,11 @@
 .cell-action .button + .button { margin-left: 6px; }
 /* Botones con y sin icono comparten línea: sin esto se alinean por la base del texto y uno queda más alto. */
 .cell-action .button { vertical-align: middle; }
+
+/* ---------- Acceso a proyectos (edición de usuarios) ---------- */
+.access { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px 12px; display: grid; gap: 8px; margin: 0; }
+.access legend { padding: 0 6px; font: 600 13px var(--font-heading); color: var(--muted); }
+.access__table td, .access__table th { text-align: center; }
+.access__table th:first-child, .access__table td:first-child { text-align: left; }
+.access__table input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--brand); }
+.notice-inline { background: var(--brand-soft); color: var(--brand); border-radius: 8px; padding: 10px 12px; font-size: 14px; }

@@ -43,28 +43,29 @@ export class CommentsService {
   ) {}
 
   async listForMilestone(milestoneId: string, actor: AuthenticatedUser): Promise<CommentView[]> {
-    await this.access.milestone(milestoneId, actor);
+    await this.access.milestone(milestoneId, actor, 'read');
     return this.list({ milestoneId });
   }
 
   async listForTask(taskId: string, actor: AuthenticatedUser): Promise<CommentView[]> {
-    await this.access.task(taskId, actor);
+    await this.access.task(taskId, actor, 'read');
     return this.list({ taskId });
   }
 
   async createForMilestone(milestoneId: string, body: string, files: Express.Multer.File[] | undefined, actor: AuthenticatedUser): Promise<CommentView> {
-    await this.access.milestone(milestoneId, actor, true);
+    await this.access.milestone(milestoneId, actor, 'create');
     return this.create({ milestoneId }, body, files, actor);
   }
 
   async createForTask(taskId: string, body: string, files: Express.Multer.File[] | undefined, actor: AuthenticatedUser): Promise<CommentView> {
-    await this.access.task(taskId, actor, true);
+    await this.access.task(taskId, actor, 'create');
     return this.create({ taskId }, body, files, actor);
   }
 
   /** Comments are never edited. Their author or an administrator can delete them (with their attachments). */
   async remove(id: string, actor: AuthenticatedUser): Promise<void> {
-    const comment = await this.access.comment(id, actor, true);
+    // Deleting needs no permission beyond seeing the project: the author (or an administrator) decides. It still counts as a change.
+    const comment = await this.access.comment(id, actor, 'read', true);
     if (comment.authorId !== actor.id && !actor.isAdmin) {
       throw new ForbiddenException('Only the author or an administrator can delete a comment.');
     }

@@ -21,6 +21,7 @@ describe('database schema', () => {
       'comments',
       'milestones',
       'permissions',
+      'project_members',
       'projects',
       'roles',
       'tasks',

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../api/client.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { Field, FormActions, FormError, useSubmit } from '../components/Forms.jsx';
+import ProjectAccess, { toAssignments } from '../components/ProjectAccess.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import { EmptyState, ErrorState, LoadingState } from '../components/States.jsx';
@@ -41,14 +42,19 @@ function CreateUserForm({ roles, onSaved, onClose }) {
 
 function EditUserForm({ user, roles, isSelf, onSaved, onClose }) {
   const [values, setValues] = useState({ fullName: user.fullName, roleId: user.role.id, isActive: user.isActive });
+  const [rows, setRows] = useState(null); // asignaciones de proyectos; `null` hasta que cargan
+  const isAdminRole = roles.find((role) => role.id === values.roleId)?.isProtected;
+
   const { busy, error, submit } = useSubmit(async () => {
     await api.patch(`/users/${user.id}`, { fullName: values.fullName.trim(), roleId: values.roleId, isActive: values.isActive });
+    // El administrador ve todo: no se le asignan proyectos. Para los demás se guarda la lista tal como quedó.
+    if (!isAdminRole && rows) await api.put(`/users/${user.id}/projects`, { assignments: toAssignments(rows) });
     await onSaved();
     onClose();
   });
 
   return (
-    <Modal title={`Editar a ${user.fullName}`} onClose={onClose}>
+    <Modal title={`Editar a ${user.fullName}`} onClose={onClose} wide>
       <form className="form" onSubmit={submit}>
         <p className="muted">{user.email}</p>
         <Field label="Nombre completo"><input value={values.fullName} onChange={(e) => setValues({ ...values, fullName: e.target.value })} required maxLength={150} /></Field>
@@ -57,12 +63,17 @@ function EditUserForm({ user, roles, isSelf, onSaved, onClose }) {
             {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
           </select>
         </Field>
+        {isAdminRole ? (
+          <p className="notice-inline" role="note">Los administradores ven y pueden trabajar en <strong>todos</strong> los proyectos: no necesitan asignación.</p>
+        ) : (
+          <ProjectAccess userId={user.id} onChange={setRows} />
+        )}
         <label className="check-row">
           <input type="checkbox" checked={values.isActive} disabled={isSelf} onChange={(e) => setValues({ ...values, isActive: e.target.checked })} />
           <span>Cuenta activa {isSelf && <small className="muted">(no puede desactivar la suya)</small>}</span>
         </label>
         <FormError message={error} />
-        <FormActions busy={busy} submitLabel="Guardar cambios" onCancel={onClose} />
+        <FormActions busy={busy || (!isAdminRole && !rows)} submitLabel="Guardar cambios" onCancel={onClose} />
       </form>
     </Modal>
   );
